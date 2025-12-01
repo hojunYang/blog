@@ -5,10 +5,10 @@ export default defineConfig({
 	plugins: [sveltekit()],
 	server: {
 		host: true,
-		allowedHosts: ['www.hojunyang.xyz', 'hojunyang.xyz']
+		allowedHosts: ['www.hojunyang.xyz', 'hojunyang.xyz', 'hojunyang.duckdns.org']
 	},
 	preview: {
 		host: true,
-		allowedHosts: ['www.hojunyang.xyz', 'hojunyang.xyz']
+		allowedHosts: ['www.hojunyang.xyz', 'hojunyang.xyz', 'hojunyang.duckdns.org']
 	}
 });
