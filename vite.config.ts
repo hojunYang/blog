@@ -4,6 +4,11 @@ import { defineConfig } from 'vite';
 export default defineConfig({
 	plugins: [sveltekit()],
 	server: {
-		port: 3000
+		host: true,
+		allowedHosts: ['www.hojunyang.xyz', 'hojunyang.xyz']
+	},
+	preview: {
+		host: true,
+		allowedHosts: ['www.hojunyang.xyz', 'hojunyang.xyz']
 	}
 });
