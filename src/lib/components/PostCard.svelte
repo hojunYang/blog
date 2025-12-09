@@ -22,8 +22,7 @@
 		<div class="post-header">
 			<h2>{post.title}</h2>
 			<div class="post-meta">
-				<span class="author">👤 {post.author}</span>
-				<span class="date">📅 {formatDate(post.date)}</span>
+				<span class="date">{formatDate(post.date)}</span>
 			</div>
 		</div>
 		<p class="excerpt">{post.excerpt}</p>
@@ -123,7 +122,7 @@
 		color: var(--color-text-hover);
 	}
 
-	@media (max-width: 768px) {
+	@media (max-width: 1080px) {
 		.post-card {
 			background: transparent;
 			border-radius: 0;

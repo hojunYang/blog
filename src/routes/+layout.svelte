@@ -36,7 +36,7 @@
 		padding: var(--spacing-xl);
 	}
 
-	@media (max-width: 768px) {
+	@media (max-width: 1080px) {
 		main {
 			padding: var(--spacing-md);
 		}

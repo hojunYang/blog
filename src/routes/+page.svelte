@@ -17,27 +17,56 @@
 	let startX = $state(0);
 	let currentX = $state(0);
 	let velocity = $state(0);
+	let touchStartY = $state(0);
+	let hasMoved = $state(false);
 	let windowHeight = $state(1000); // 기본값
 	
 	const topPercent = $derived(0.000375 * windowHeight * windowHeight - 0.925 * windowHeight + 750);
 
-	function handleStart(x: number) {
+	function handleStart(x: number, y?: number) {
 		isDragging = true;
 		startX = x;
 		currentX = x;
 		velocity = 0;
+		hasMoved = false;
+		if (y !== undefined) {
+			touchStartY = y;
+		}
 	}
 
-	function handleMove(x: number) {
+	function handleMove(x: number, y?: number) {
 		if (!isDragging) return;
 		
 		const deltaX = x - currentX;
-		velocity = deltaX;
-		rotation += deltaX * 0.20;
+		const deltaY = y !== undefined ? Math.abs(y - touchStartY) : 0;
+		
+		// 수직 이동이 크면 링크 클릭으로 간주
+		if (deltaY > 10) {
+			hasMoved = true;
+		}
+		
+		// 수평 이동이 있으면 드래그로 간주
+		if (Math.abs(deltaX) > 5) {
+			hasMoved = true;
+			velocity = deltaX;
+			rotation += deltaX * 0.20;
+		}
+		
 		currentX = x;
 	}
 
-	function handleEnd() {
+	function handleEnd(e?: Event) {
+		// 링크 클릭인 경우 드래그 방지
+		if (hasMoved && e) {
+			const target = e.target as HTMLElement;
+			if (target.closest('a')) {
+				// 링크 클릭은 허용
+				isDragging = false;
+				hasMoved = false;
+				return;
+			}
+		}
+		
 		isDragging = false;
 		const interval = setInterval(() => {
 			if (Math.abs(velocity) < 0.1) {
@@ -48,9 +77,15 @@
 				rotation += velocity * 0.20;
 			}
 		}, 10) as unknown as number;
+		hasMoved = false;
 	}
 
 	function handleMouseDown(e: MouseEvent) {
+		// 링크 클릭은 허용
+		const target = e.target as HTMLElement;
+		if (target.closest('a')) {
+			return;
+		}
 		e.preventDefault();
 		handleStart(e.clientX);
 	}
@@ -61,27 +96,32 @@
 		handleMove(e.clientX);
 	}
 
-	function handleMouseUp() {
-		handleEnd();
+	function handleMouseUp(e: MouseEvent) {
+		handleEnd(e);
 	}
 
 	// 터치 이벤트를 non-passive로 등록하기 위한 액션
 	function setupTouchListeners(node: HTMLDivElement) {
 		const touchStartHandler = (e: TouchEvent) => {
 			if (e.touches.length === 1) {
+				const target = e.target as HTMLElement;
+				// 링크 클릭은 허용
+				if (target.closest('a')) {
+					return;
+				}
 				e.preventDefault();
-				handleStart(e.touches[0].clientX);
+				handleStart(e.touches[0].clientX, e.touches[0].clientY);
 			}
 		};
 
 		const touchMoveHandler = (e: TouchEvent) => {
 			if (!isDragging || e.touches.length !== 1) return;
 			e.preventDefault();
-			handleMove(e.touches[0].clientX);
+			handleMove(e.touches[0].clientX, e.touches[0].clientY);
 		};
 
-		const touchEndHandler = () => {
-			handleEnd();
+		const touchEndHandler = (e: TouchEvent) => {
+			handleEnd(e);
 		};
 
 		node.addEventListener('touchstart', touchStartHandler, { passive: false });
