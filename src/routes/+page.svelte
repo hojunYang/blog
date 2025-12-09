@@ -17,24 +17,27 @@
 	let startX = $state(0);
 	let currentX = $state(0);
 	let velocity = $state(0);
+	let windowHeight = $state(1000); // 기본값
+	
+	const topPercent = $derived(0.000375 * windowHeight * windowHeight - 0.925 * windowHeight + 750);
 
-	function handleMouseDown(e: MouseEvent) {
+	function handleStart(x: number) {
 		isDragging = true;
-		startX = e.clientX;
-		currentX = e.clientX;
+		startX = x;
+		currentX = x;
 		velocity = 0;
 	}
 
-	function handleMouseMove(e: MouseEvent) {
+	function handleMove(x: number) {
 		if (!isDragging) return;
 		
-		const deltaX = e.clientX - currentX;
+		const deltaX = x - currentX;
 		velocity = deltaX;
 		rotation += deltaX * 0.20;
-		currentX = e.clientX;
+		currentX = x;
 	}
 
-	function handleMouseUp() {
+	function handleEnd() {
 		isDragging = false;
 		const interval = setInterval(() => {
 			if (Math.abs(velocity) < 0.1) {
@@ -47,12 +50,80 @@
 		}, 10) as unknown as number;
 	}
 
+	function handleMouseDown(e: MouseEvent) {
+		e.preventDefault();
+		handleStart(e.clientX);
+	}
+
+	function handleMouseMove(e: MouseEvent) {
+		if (!isDragging) return;
+		e.preventDefault();
+		handleMove(e.clientX);
+	}
+
+	function handleMouseUp() {
+		handleEnd();
+	}
+
+	// 터치 이벤트를 non-passive로 등록하기 위한 액션
+	function setupTouchListeners(node: HTMLDivElement) {
+		const touchStartHandler = (e: TouchEvent) => {
+			if (e.touches.length === 1) {
+				e.preventDefault();
+				handleStart(e.touches[0].clientX);
+			}
+		};
+
+		const touchMoveHandler = (e: TouchEvent) => {
+			if (!isDragging || e.touches.length !== 1) return;
+			e.preventDefault();
+			handleMove(e.touches[0].clientX);
+		};
+
+		const touchEndHandler = () => {
+			handleEnd();
+		};
+
+		node.addEventListener('touchstart', touchStartHandler, { passive: false });
+		node.addEventListener('touchmove', touchMoveHandler, { passive: false });
+		node.addEventListener('touchend', touchEndHandler, { passive: false });
+		node.addEventListener('touchcancel', touchEndHandler, { passive: false });
+
+		return {
+			destroy() {
+				node.removeEventListener('touchstart', touchStartHandler);
+				node.removeEventListener('touchmove', touchMoveHandler);
+				node.removeEventListener('touchend', touchEndHandler);
+				node.removeEventListener('touchcancel', touchEndHandler);
+			}
+		};
+	}
+
 	function animate() {
 		requestAnimationFrame(animate);
 	}
 
 	$effect(() => {
 		animate();
+	});
+
+	// window height를 추적하기 위한 resize 리스너
+	$effect(() => {
+		if (typeof window === 'undefined') return;
+		
+		function handleResize() {
+			windowHeight = window.innerHeight;
+		}
+		
+		// 초기값 설정
+		handleResize();
+		
+		// resize 이벤트 리스너 추가
+		window.addEventListener('resize', handleResize);
+		
+		return () => {
+			window.removeEventListener('resize', handleResize);
+		};
 	});
 </script>
 
@@ -64,6 +135,7 @@
 	class="home"
 	role="button"
 	tabindex="0"
+	use:setupTouchListeners
 	onmousedown={handleMouseDown}
 	onmousemove={handleMouseMove}
 	onmouseup={handleMouseUp}
@@ -75,7 +147,7 @@
 		<div class="carousel-container">
 			{#each extendedPosts as post, i}
 				{@const angle = (360 / extendedPosts.length) * i + rotation}
-				{@const radius = 1600}
+				{@const radius = 1550}
 				{@const x = Math.cos((angle * Math.PI) / 180) * radius}
 				{@const y = Math.sin((angle * Math.PI) / 180) * radius}
 				{@const cardRotation = angle + 90}
@@ -84,6 +156,7 @@
 					class="post-wrapper"
 					class:dragging={isDragging}
 					style="
+						top: {topPercent}%;
 						transform: translate(calc(-50% + {x}px), calc(-50% + {y}px)) rotate({cardRotation}deg);
 					"
 				>
@@ -95,7 +168,7 @@
 
 	<section class="recent-posts mobile-only">
 		<h4>최근 포스트</h4>
-		<div class="posts-grid">
+		<div class="posts-list">
 			{#each recentPosts as post}
 				<PostCard {post} />
 			{/each}
@@ -172,7 +245,6 @@
 	.post-wrapper {
 		position: absolute;
 		width: 320px;
-		top: 200%;
 		left: 50%;
 		pointer-events: auto;
 	}
@@ -191,13 +263,13 @@
 		color: var(--color-text-primary);
 	}
 
-	.posts-grid {
-		display: grid;
-		grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-		gap: var(--spacing-xl);
+	.posts-list {
+		display: flex;
+		flex-direction: column;
+		gap: 0;
 	}
 
-	@media (max-width: 768px) {
+	@media (max-width: 1080px) {
 		.desktop-only {
 			display: none;
 		}
@@ -212,13 +284,13 @@
 			overflow: visible;
 		}
 
-		.recent-posts h4 {
-			font-size: var(--font-2xl);
+		.recent-posts {
+			padding: 0 var(--spacing-md);
 		}
 
-		.posts-grid {
-			grid-template-columns: 1fr;
-			gap: var(--spacing-lg);
+		.recent-posts h4 {
+			font-size: var(--font-xl);
+			margin-bottom: var(--spacing-md);
 		}
 	}
 </style>
