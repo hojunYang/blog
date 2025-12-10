@@ -163,12 +163,11 @@
 		padding: var(--spacing-xs) var(--spacing-sm);
 		border-radius: var(--radius-sm);
 		font-size: 0.9em;
-		color: #e53e3e;
+		color: #24292f;
 	}
 
 	.post-content :global(pre) {
-		background: var(--color-text-primary);
-		color: #e2e8f0;
+		background: #282c34 !important; /* atom one dark background */
 		padding: var(--spacing-lg);
 		border-radius: var(--radius-md);
 		overflow-x: auto;
@@ -176,11 +175,11 @@
 	}
 
 	.post-content :global(pre code) {
-		background: none;
+		background: none !important;
 		padding: 0;
-		color: inherit;
 		font-size: var(--font-sm);
 		line-height: 1.5;
+		color: #dcdcdc;
 	}
 
 	.post-content :global(strong) {

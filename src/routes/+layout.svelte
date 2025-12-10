@@ -1,6 +1,7 @@
 <script lang="ts">
 	import '../app.css';
 	import '$lib/assets/fira_code.css';
+	import 'highlight.js/styles/atom-one-dark.css';
 	import Header from '$lib/components/Header.svelte';
 	// import Footer from '$lib/components/Footer.svelte';
 	import favicon from '$lib/assets/favicon.ico';

@@ -2,9 +2,28 @@ import { readFileSync, readdirSync } from 'fs';
 import { join } from 'path';
 import matter from 'gray-matter';
 import { marked } from 'marked';
+import { markedHighlight } from 'marked-highlight';
+import hljs from 'highlight.js';
 import type { BlogPost } from '$lib/types';
 
 const postsDirectory = join(process.cwd(), 'src', 'lib', 'posts');
+
+// marked 설정
+marked.setOptions({
+	breaks: true,
+	gfm: true
+});
+
+// marked에 highlight.js 확장 추가
+marked.use(
+	markedHighlight({
+		langPrefix: 'hljs language-',
+		highlight(code, lang) {
+			const language = hljs.getLanguage(lang) ? lang : 'plaintext';
+			return hljs.highlight(code, { language }).value;
+		}
+	})
+);
 
 // 모든 포스트 메타데이터 가져오기
 export function getAllPostsMetadata(): Omit<BlogPost, 'content'>[] {
