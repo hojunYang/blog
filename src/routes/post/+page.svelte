@@ -208,7 +208,7 @@
 		color: var(--color-text-muted);
 	}
 
-	@media (max-width: 768px) {
+	@media (max-width: 1080px) {
 		/* .page-header h1 {
 			font-size: var(--font-3xl);
 		}
@@ -222,8 +222,11 @@
 		}
 
 		.posts-grid {
-			grid-template-columns: 1fr;
-			gap: var(--spacing-lg);
+			background: var(--color-bg-white);
+			gap: var(--spacing-md);
+			border-radius: var(--radius-lg);
+			padding: var(--spacing-lg);
+			box-shadow: var(--shadow-md);
 		}
 	}
 </style>

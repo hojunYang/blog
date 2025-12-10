@@ -29,8 +29,7 @@
 				<a href="/post" class="back-link">← 목록으로 돌아가기</a>
 				<h1>{post.title}</h1>
 				<div class="post-meta">
-					<span class="author">👤 {post.author}</span>
-					<span class="date">📅 {formatDate(post.date)}</span>
+					<span class="date">{formatDate(post.date)}</span>
 				</div>
 				<div class="tags">
 					{#each post.tags as tag}
@@ -111,7 +110,6 @@
 		color: var(--color-text-muted);
 	}
 
-	.author,
 	.date {
 		display: flex;
 		align-items: center;

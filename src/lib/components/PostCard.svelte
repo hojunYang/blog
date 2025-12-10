@@ -82,7 +82,6 @@
 		color: var(--color-text-muted);
 	}
 
-	.author,
 	.date {
 		display: flex;
 		align-items: center;
@@ -159,10 +158,6 @@
 		.post-meta {
 			font-size: var(--font-xs);
 			gap: var(--spacing-sm);
-		}
-
-		.author {
-			display: none;
 		}
 
 		.excerpt {

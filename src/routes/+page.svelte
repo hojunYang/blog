@@ -325,7 +325,10 @@
 		}
 
 		.recent-posts {
-			padding: 0 var(--spacing-md);
+			background: var(--color-bg-white);
+			border-radius: var(--radius-lg);
+			padding: var(--spacing-lg);
+			box-shadow: var(--shadow-md);
 		}
 
 		.recent-posts h4 {
