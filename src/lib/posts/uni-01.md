@@ -153,6 +153,96 @@ int main(){
 }
 OTHER TOOLS IN CLASS & ARRAY DECAY
 ```
+## 10주차
+### INHERITANCE
+Inheritance is mainly about grouping common aspects.
+Base class: parent class or superclass
+Derived class: child class or subclass
+
+```cpp
+class HourlyEmployee : public Employee // :를 사용해서 상속 받을 수 있음
+{ }
+```
+C++ allows us to drop the const when redefining in the derived class.
+
+명시적으로 함수를 호출함으로써 부모 Class의 멤버 함수에 접근할 수 있음.
+```cpp
+Employee JaneE;
+HourlyEmployee SallyH;
+JaneE.printCheck(); // Employee’s printCheck
+SallyH.printCheck(); // HourlyEmployee printCheck
+SallyH.Employee::printCheck(); // Employee’s printCheck
+```
+
+### Constructor
+Base class constructors are not inherited in derived classes. But, they can be invoked within derived class constructor. and Initializing the base class members in initialization section is not allowed. 
+Should always invoke one of the base class’s constructors. If you do not, default base class constructor automatically called.
+
+```cpp
+HourlyEmployee::HourlyEmployee(
+    string theName,
+    string theNumber,
+    double theWageRate,
+    double theHours
+) 
+    : Employee(theName, theNumber),
+      wageRate(theWageRate),
+      hours(theHours)
+{
+    // deliberately empty
+}
+```
+When derived class destructor is invoked: Automatically calls base class destructor. Base class destructor handles inherited data automatically
+
+Calling order:
+▪ ctor calling order: A->B->C
+▪ dtor calling order: A<-B<-C
+
+### Pitfall: Private Members in Base Class
+Dreived class cannot access directly members of bases classes. -> This is possible with protected qualifier (in base class).
+Using private is rare in real applications.
+```cpp
+class Person {
+    // ...
+private:
+    string name;
+// protected:
+//    string name;
+};
+class Student : public Person{
+    // ...
+    void printInfo();
+    int sid;
+};
+void Student::printInfo(){
+    // name은 private이므로 직접 접근 불가.
+    cout << "Name: 접근 불가" << endl;
+    cout << "Student ID: " << sid << endl;
+}
+```
+public으로 상속을 받으면 Base의 모든 것이 유지되고, protected나 private로 해버리면, Base Class의 public이나 protected가 변경될 수 있음.
+
+### Functions Not Inherited
+- Constructors
+- Destructors
+- Copy constructor
+- Assignment operator
+
+Copy Constructor Example
+```cpp
+B::B(const B& Object) : A(Object), …
+{…}
+```
+A(Object)는 자식 객체를 부모 객체가 받으므로 동작할 수 있다.
+
+### Multiple Inheritance
+Derived class can have more than one base class!
+
+BUT Possibilities for ambiguity are endless!
+- Dangerous undertaking!
+- Some believe should never be used
+- Certainly, should only be used be experienced programmers!
+- So, it's not allowed in the successors of C++ (e.g., JAVA)
 
 
 ## UML
