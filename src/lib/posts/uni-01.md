@@ -312,6 +312,190 @@ Derived class can have more than one base class!
 - So, it's not allowed in the successors of C++ (e.g., JAVA)
 
 
+## 11주차
+
+### VIRTUAL FUNCTION BASICS
+
+Polymorphism과 Virtual Function은 Very important OOP principle!
+
+**Polymorphism**
+- Associating many meanings to one function
+- Virtual functions provide this capability
+- Fundamental principle of object-oriented programming!
+
+Virtual functions을 사용하면 컴파일러에게 실제 프로그램에서 사용이 될 때까지 implement를 대기하라고 명령한다.
+
+**Late Binding (Dynamic Binding):**  
+Virtual functions implement late binding
+**예시:**
+
+```cpp
+class Sale {
+public:
+    Sale();
+    Sale(double thePrice);
+    double getPrice() const;
+    virtual double bill() const;  // Virtual function
+    double savings() const;
+private:
+    double price;
+};
+
+double Sale::savings() const {
+    return bill();  // Virtual function 호출
+}
+
+class Car : public Sale {
+public:
+    virtual double bill() const; 
+    // Since bill was declared virtual in the base class,
+    // it is automatically virtual in the derived class
+    // even without "virtual" keyword.
+    // But, it is recommended to add "virtual"
+    // to explicitly indicate it's virtual for readability.
+};
+
+double Car::bill() const {
+    return 100.35;
+}
+
+Sale a = new Car();
+a.savings();  // Car의 bill()이 호출됨 (late binding)
+```
+
+이때 `a.savings()`를 통해 실행되는 `bill()`은 Car로부터 late binding한 `bill()`이다.
+
+**중요한 차이:**
+- Virtual functions changed: **overridden**
+- Non-virtual functions changed: **redefined**
+
+### override와 final Keyword
+
+**override (C++11):**
+- `virtual`로 Virtual Function을 명시적으로 표시하거나
+- `override`를 통해 더 명확하게 표시
+
+**final:**
+- Subclass에서 더 이상 override 못하게 명시할 수 있음
+
+### Virtual Functions의 단점
+
+**One major disadvantage: overhead!**
+
+- Uses more storage (typically, by a size of a single pointer)
+- Internally, an additional pointer to **VTABLE (virtual function table)** is stored implicitly
+- VTABLE stores the data for virtual functions
+- Late binding is "on the fly", so programs run slower
+
+**결론:**  
+If virtual functions not needed, should not be used.
+
+### Pure Virtual Functions
+
+Superclass에서 virtual function에 대한 정의가 필요없을 때 `= 0`을 사용할 수 있습니다.
+
+```cpp
+class Pet
+{
+  public:
+    string name;
+    virtual void print() const = 0;  // Pure virtual function
+};
+
+int main()
+{
+  Pet pet;  // ❌ 컴파일 에러!
+  return 0;
+}
+```
+
+**컴파일 에러:**
+```
+error: variable type 'Pet' is an abstract class
+note: unimplemented pure virtual method 'print' in 'Pet'
+    virtual void print() const = 0;
+```
+
+**Abstract Base Classes:**
+- Pure virtual function이 한 개 이상 존재하는 class
+- Object를 생성할 수 없음 (모든 멤버 함수에 대해 완전한 정의가 없기 때문)
+
+### Extended Type Compatibility
+
+Derived is derived class of Base. We do not know how to assign the members of Derived from Base.
+
+```cpp
+class Pet {
+public:
+    string name;
+    virtual void print() const;
+};
+
+class Dog : public Pet {
+public:
+    string breed;
+    virtual void print() const;
+};
+
+Dog vdog;
+Pet vpet;
+vdog.name = "Tiny";
+vdog.breed = "Great Dane";
+vpet = vdog;  // OK! 자식 → 부모 할당 가능
+```
+
+**중요 규칙:**
+- Can assign values to parent-types, but not reverse
+- 이 상태에서 `vpet.breed`는 존재하지 않음
+
+**Slicing Problem:**  
+자식 클래스의 추가 멤버가 "잘려나가는" 문제. 이를 해결하기 위해 virtual member function을 사용할 수 있다.
+
+### Virtual Destructors
+
+```cpp
+Base *pBase = new Derived;
+// ...
+delete pBase;  // Derived의 destructor가 호출되려면?
+```
+
+**해결책:**  
+Destructor를 virtual로 선언하면 된다.
+
+```cpp
+class Base {
+public:
+    virtual ~Base() {}  // Virtual destructor
+};
+```
+
+**Best Practice:**  
+Good policy for all destructors to be virtual.
+
+### Upcasting and Downcasting
+
+```cpp
+Pet vpet;
+Dog vdog;
+
+vdog = static_cast<Dog>(vpet);     // ❌ ILLEGAL! (Downcasting)
+vpet = vdog;                        // ✅ Legal! (Upcasting)
+vpet = static_cast<Pet>(vdog);     // ✅ Also legal!
+```
+
+**규칙:**
+- **Upcasting (자식 → 부모):** 가능
+- **Downcasting (부모 → 자식):** 허용되지 않음
+
+### Downcasting with dynamic_cast
+
+Downcasting dangerous! 그러나 `dynamic_cast`를 통해 가능은 하다.
+
+**주의사항:**  
+Downcasting rarely done due to pitfalls:
+- Must track all information to be added
+- All member functions must be virtual
+
 ## UML
 
 ### What is Modeling?
