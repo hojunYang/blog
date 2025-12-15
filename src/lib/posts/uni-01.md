@@ -496,6 +496,320 @@ Downcasting rarely done due to pitfalls:
 - Must track all information to be added
 - All member functions must be virtual
 
+## 12주차
+### Operator Overloading
+
+**Operator Overloading Introduction:**
+
+Operators `+`, `-`, `%`, `==`, etc 는 **function**이다.  
+`x + 7`이나 `y - 7` 같은 표현식은 사람에게 맞춰진 것이다.  
+따라서 Function-like notation: `+(x,7)` 와 같이 작성할 수 있다.
+
+**Operator Overloading Perspective:**
+
+Built-in operators: `+`, `-`, `=`, `%`, `==`, `/`, `*`, ...  
+우리는 이러한 operator function을 **overload** 할 수 있다.
+
+```cpp
+class Money {
+public:
+    getDollars();
+    getCents();
+private:
+    int dollars;
+    int cents;
+    …
+};
+
+// Global operator overloading
+const Money operator+(const Money& amount1, const Money& amount2);
+```
+
+위 코드는 **global**한 overloaded를 한 것이다.  
+효율을 위해 **constant reference**를 사용하는 것이 좋다.
+
+```cpp
+// bool 형태를 통해 operator==에 대해서도 overload 가능
+bool operator==(const Money& amount1, const Money& amount2);
+```
+
+**Constructors Returning Objects:**
+
+Constructor는 void function이 아니다. 그 이유는 constructor은 object(class의 호출)를 반환하기 때문이다.  
+Remind the "**anonymous object**".
+
+```cpp
+cout << 1 + 2 << endl; // 3 is placed in an anonymous object
+```
+
+**const 활용에 대하여:**
+
+- **매개변수의 const**: operand를 변경하면 안되는 연산이기 때문에 붙인다. const 객체도 operand로 받을 수 있다.
+- **반환 타입의 const**: 반환된 임시 객체를 수정하지 못하게 하려는 의도
+  - `(m1 + m2).input()` (e.g. `= m3`)을 통해 수정이 이뤄진다면 이름도 없는 임시 객체가 수정되는 것
+  - 그러나 `m1 + m2`는 rvalue(임시객체)이기 때문에 non-const 멤버 함수가 rvalue에 바인딩할 수 없다
+
+**Overloading Unary Operators:**
+
+Unary Operator로는 `-`, `++`, `--`가 있다.  
+Unary operator는 only one argument (since only 1 operand).  
+`-`에 대해서는 두 번의 overload가 필요하다:
+- Two operand의 경우 (binary)
+- One operand의 경우 (unary)
+
+### OVERLOADING AS MEMBER FUNCTIONS
+
+**중요:**  
+Only **ONE parameter**, not two!  
+Calling object가 첫 번째 매개변수 역할을 한다. `*this`가 first parameter로 implicitly 전달됨.
+
+```cpp
+Money cost(1, 50), tax(0, 15), total;
+total = cost + tax;
+// Actually: total = cost.operator+(tax)
+
+// Declaration
+const Money::operator+(const Money& amount);
+```
+
+**장점:**
+- Member operators가 더 효율적: accessor & mutator functions 호출 불필요
+- OOP 원칙은 member operators를 권장
+
+**Overloading Function Application `()`:**
+
+```cpp
+Aclass anObject;
+anObject(42);
+// If () overloaded! calls overload
+```
+
+### Pitfall: 특정 연산자 Overloading 주의사항
+
+`&&`, `||`, and **comma operator**은 overload가 가능하지만, overload를 하게 되면 **short-circuit의 특성을 잃는다**.
+
+왜냐하면 overload를 위해 변수의 타입을 정하기 위해 모든 인자를 평가해야하기 때문에, 평가에 대한 이점이 사라진다.  
+comma operator은 어떻게 써도 성능에 영향을 주지 않는다.
+
+**결론:**  
+이런 연산자들은 일반적으로 overload하지 않는 것이 좋다.
+
+### Overloading `<<` and `>>`
+
+`<<`, `>>` operator는 overload하는게 **가독성을 증진**할 수 있다.
+
+**`<<` 연산자 overloading 특징:**
+- 1st operand는 predefined object `cout`
+- 이것이 `operator<<`가 class의 **member function이 아닌 이유**
+- 2nd operand는 literal string
+
+```cpp
+Money amount(100);
+cout << "I have " << amount;
+(cout << "I have ") << amount;
+// 두 가지 모두 같은 결과
+```
+
+`<<` operator는 a reference to `cout` object를 return한다.
+
+**구현 예제:**
+
+```cpp
+// Friend function 선언
+friend ostream& operator<<(ostream& outputStream, const Money& amount);
+friend istream& operator>>(istream& inputStream, Money& amount);
+
+// << 연산자 구현
+ostream& operator<<(ostream& outputStream, const Money& amount)
+{
+    int absDollars = abs(amount.dollars);
+    int absCents = abs(amount.cents);
+
+    outputStream << absDollars;
+    outputStream << absCents;
+    return outputStream;  // 체이닝을 위해 반환
+}
+
+// >> 연산자 구현
+istream& operator>>(istream& inputStream, Money& amount)
+{
+    char dollarSign;
+    inputStream >> dollarSign;  // hopefully
+    double amountAsDouble;
+    inputStream >> amountAsDouble;
+    amount.dollars = amount.dollarsPart(amountAsDouble);
+    amount.cents = amount.centsPart(amountAsDouble);
+    return inputStream;  // 체이닝을 위해 반환
+}
+```
+
+이처럼 Returns its first argument type: `ostream&` & `istream&`
+
+### Assignment Operator `=`
+
+**중요 규칙:**
+
+Must be overloaded as **member operator**.  
+그 이유는 왼쪽 피연산자가 반드시 자기 자신(`*this`)이어야 하기 때문이다.
+
+**Simultaneously with copy constructor:**  
+복사 생성자와 대입 연산자는 **쌍**이다. 하나를 정의하면 다른 하나도 같이 고려해야 한다.  
+왜냐하면 한 쪽이 Deep copy로 정의해도 다른 쪽은 Shallow copy가 될 수 있기 때문.
+
+**기본 대입 연산자:**
+- 자동으로 제공되며, **Shallow copy** 발생
+- 한 object의 멤버 변수가 다른 object의 동일한 멤버 변수로 그대로 복사됨
+- 단순한 class에서는 기본 대입 연산자로도 충분
+- **포인터가 있다면** 새로운 메모리를 할당하고 내용을 복사하는 **Deep copy** 구현 필요
+
+**Deep Copy 구현 예제:**
+
+```cpp
+class String {
+    char* data;
+public:
+    // 1. 생성자
+    String(const char* s = "") {
+        data = new char[strlen(s) + 1];
+        strcpy(data, s);
+    }
+
+    // 2. 복사 생성자 (deep copy)
+    String(const String& other) {
+        data = new char[strlen(other.data) + 1];
+        strcpy(data, other.data);
+    }
+
+    // 3. 대입 연산자 (deep copy)
+    String& operator=(const String& rhs) {
+        if (this == &rhs) return *this;  // 자기 자신과의 대입 방지
+
+        delete[] data;  // 기존 메모리 해제
+        data = new char[strlen(rhs.data) + 1];  // 새 메모리 할당
+        strcpy(data, rhs.data);  // 데이터 복사
+
+        return *this;  // 체이닝을 위해 반환
+    }
+
+    // 4. 소멸자
+    ~String() {
+        delete[] data;
+    }
+};
+```
+
+**Rule of Three:**  
+소멸자, 복사 생성자, 대입 연산자 중 하나를 정의하면 셋 다 정의해야 한다!
+
+### Increment and Decrement Operator
+
+**두 가지 버전:**
+
+Each operator has two versions:
+- **Prefix notation**: `++x`
+- **Postfix notation**: `x++`
+
+이를 구별하기 위해 다른 문법으로 구현한다.
+
+**구현 예제:**
+
+```cpp
+class Counter {
+    int value;
+public:
+    // Prefix: ++x
+    Counter& operator++() {
+        ++value;
+        return *this;  // 증가된 값 반환
+    }
+
+    // Postfix: x++ (dummy int parameter)
+    Counter operator++(int) {
+        Counter temp = *this;  // 이전 값 저장
+        ++value;               // 값 증가
+        return temp;           // 이전 값 반환
+    }
+};
+```
+
+**핵심 차이점:**
+- **Prefix** (`++x`): 증가 후 자기 자신을 반환 → `Counter&`
+- **Postfix** (`x++`): 증가 전 복사본을 반환 → `Counter`
+
+`(int)` 매개변수는 아무런 의미가 없는 **더미 코드**로, 단지 prefix와 구별하기 위한 문법적 장치다.
+
+### Friend Functions
+
+**Friend Functions의 필요성:**
+
+함수를 비멤버로 만들면:
+- ❌ 캡슐화를 지키는 대신 getter/setter를 남발
+- ❌ 성능, 가독성 모두 나빠짐
+
+**Friend Functions의 장점:**
+- ✅ private class data에 직접 접근 가능
+- ✅ No overhead, more efficient
+
+**Friend 선언 방법:**
+
+`friend` 키워드를 function declaration 앞에 사용.  
+Class definition 안에 명시. **But they're NOT member functions!**
+
+```cpp
+class A {
+  private:
+    int num;
+  public:
+    A(): num(10) {}
+    friend void printNum(A);  // friend 선언
+};
+
+// ✅ 올바른 구현 (A::를 붙이지 않음)
+void printNum(A a) {
+  cout << "num: " << a.num << endl;  // private 멤버 직접 접근 가능
+}
+
+// ❌ 잘못된 구현
+void A::printNum(A a) {  // Friend는 member가 아니므로 A:: 불가
+  cout << "num: " << a.num << endl;
+}
+// 에러: out-of-line definition of 'printNum' does not match any declaration in 'A'
+```
+
+**Friend Function Uses:**
+
+Operator Overloads (가장 일반적인 사용):
+- Most common use of friends
+- Improves efficiency
+- Avoids need to call accessor/mutator member functions
+
+**장점 (Advantageous):**
+- Still encapsulates: friend는 class definition 안에 선언됨
+- Improves efficiency
+- Allows automatic type conversion
+
+```cpp
+// automatic type conversion 예제
+Money baseAmount(100, 60), fullAmount;
+fullAmount = baseAmount + 25;  // ✅ legal (암시적 형변환)
+fullAmount = 25 + baseAmount;  // ❌ illegal (member function이면 불가)
+```
+
+Friend function으로 `operator+`를 구현하면 양방향 형변환이 모두 가능!
+
+### Friend Classes
+Entire classes can be friends. Similar to function being friend to class.
+friend class F 형식을 통해 선언할 수 있고, NOT reciprocated다.
+```cpp
+class C {
+    friend class F; // F는 C의 모든 멤버에 접근가능하지만, 반대는 아님.
+};
+```
+
+Overload Array Operator[]
+operator[]도 overload가 가능하다. 
+Operator must return a reference! 꼭 member function이어야 한다.
+
 ## UML
 
 ### What is Modeling?
