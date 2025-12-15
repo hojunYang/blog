@@ -810,6 +810,133 @@ Overload Array Operator[]
 operator[]도 overload가 가능하다. 
 Operator must return a reference! 꼭 member function이어야 한다.
 
+## 13주차
+### Function Templates
+overloading swap function을 만든다고 가정하면, 각각 다른 type으로 구현해야한다.
+이를 Function Template으로 해결할 수 있다.
+```cpp
+template<class T> // template prefix, class는 type이라는 뜻이고, typename으로 바꿔서 쓸 수 있다.
+void swapValues( T& var1, T& var2 )
+{
+T temp = var1;
+var1 = var2;
+var2 = temp;
+}
+```
+T can be replaced by any type. can use other than "T", but T is "traditional" usage.
+
+### MORE ABOUT TEMPLATES
+Multiple Type Parameters
+```cpp
+template<class T1, class T2>
+```
+템플릿에서는 보통 하나의 치환 가능한 타입만 필요하며, 사용되지 않는 템플릿 매개변수는 허용되지 않는다. 각 템플릿 매개변수는 반드시 정의에서 사용되어야 하며, 그렇지 않으면 컴파일러가 타입을 추론하지 못해 함수 코드를 생성할 수 없고, 그 결과 함수 호출 시 적절한 정의를 찾지 못해 오류가 발생한다.
+
+Inappropriate Types in Templates
+Cannot use type for which assignment operator isn’t defined.
+e.g. an array. (not std::array)
+
+array를 쓰기 위해선
+```cpp
+// void foo(int a[3])
+// {
+// for(auto &i : a) ERROR! No begin() with pointer type
+// cout << &i << endl;
+// }
+template<class T, int N>
+void foo(T (&a)[N])
+{
+    for(auto &i : a)
+        cout << &i << endl;
+}
+```
+
+### Class Templates
+Once template defined, can declare objects of the class.
+
+```cpp
+template<class T>
+class Pair
+{
+public:
+    Pair();
+    Pair(T firstVal, T secondVal);
+    void setFirst(T newVal);
+    void setSecond(T newVal);
+    T getFirst() const;
+    T getSecond() const;
+private:
+    T first;
+    T second;
+};
+template<class T>
+Pair<T>::Pair(T firstVal, T secondVal)
+{
+    first = firstVal;
+    second = secondVal;
+}
+template<class T>
+void Pair<T>::setFirst(T newVal)
+{
+    first = newVal;
+}
+```
+위 코드처럼 Class도 template를 사용해서 선언할 수 있다.
+Each definition, Requires template prefix before each definition. Class name before :: is "Pair<T>"
+
+```cpp
+Pair<int> score;
+Pair<char> seats;
+score.setFirst(3);
+score.setSecond(0);
+```
+이렇게 object를 선언할 수 있다.
+```cpp
+template<class T>
+T addUp(const Pair<T>& thePair);
+// precondition: Operator + is defined for values of type T
+// returns sum of two values in thePair
+```
+
+Restrictions on Type Parameter
+- Assignment operator must be "well-behaved"
+- Copy constructor must also work
+- If T involves pointers, then destructor must be suitable!
+
+Templates and Inheritance
+Derived template classes. Can derive from template or non-template class.
+```cpp
+template <class T>
+class Parent{
+    T val;
+public:
+    Parent(T arg1) { val = arg1; }
+    void print() { cout << val << endl; }
+};
+
+class Child : public Parent<int> {
+public:
+    Child(int a) : Parent<int>(a){}
+};
+template <class Z>
+class Child : public Parent<Z> {
+public:
+    Child(Z a) : Parent<Z>(a){}
+};
+```
+Type Definitions: typedef or using
+They represent specialized class template name.
+```cpp
+template <class T>
+using PairOfNums = Pair<T>;
+typedef Pair<int> PairOfInt;
+
+PairOfInt pair1, pair2;
+PairOfNums<float> fpair1;
+```
+using은 typedef의 상위호환이며, 펨플릿에 대한 정의가 가능하다.
+
+
 ## UML
 
 ### What is Modeling?
