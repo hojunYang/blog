@@ -136,10 +136,10 @@ public:
 ```
 ### OTHER TOOLS IN CLASS & ARRAY DECAY
 
-**Call-by-value**
+**Call-by-value:**
 - Requires copy be made → Overhead
 
-**Call-by-reference**
+**Call-by-reference:**
 - Placeholder for actual argument
 - Most efficient method
 - For class types → clear advantage
@@ -147,46 +147,51 @@ public:
 
 **const:** read-only
 
-**Inline Member Function:** 선언이 함께된 함수  
+**Inline Member Function:**
+
+선언이 함께된 함수  
 If too long → actually less efficient! because All inline functions are include in binary.
 
-**Array Decay:** When we pass array as pointer in function call, First address to the array is passed.
+**Array Decay:**
+
+When we pass array as pointer in function call, First address to the array is passed.
+
 ```cpp
-void f1(int *arr){
+void f1(int *arr) {
     // array decay here
     // array information is lost
     // e.x size of array
     cout << sizeof(arr) << endl; // not 20, return 8
 
     for(int a : arr)
-        std::cout << a << std::endl; // Compiler error: no viable 'begin' function available
+        std::cout << a << std::endl; // ❌ Compiler error: no viable 'begin' function available
 }
 
-int main(){
-    int arr[5] = {1,2,3,4,5};
+int main() {
+    int arr[5] = {1, 2, 3, 4, 5};
     f1(arr);
 }
 ```
 
-그래서 두 가지 방식으로 Array Decay를 피해야함:
+그래서 두 가지 방식으로 **Array Decay를 피해야함**:
 
 ```cpp
 // 방법 1: 배열 크기를 별도 인자로 전달
-void f1(int *arr, int num){
-    for(int i=0; i<num; i++)
+void f1(int *arr, int num) {
+    for(int i = 0; i < num; i++)
         cout << arr[i] << endl;
     // for(int a : *(int(*)[10])arr)  // array pointer로 변환
     // for(int& a : (int(&)[num])*arr) // array reference로 변환
 }
 
 // 방법 2: Reference로 받음
-void f2(int (&arr)[5]){
+void f2(int (&arr)[5]) {
     for(int a : arr)
         cout << a << endl;
 }
 
-int main(){
-    int arr[5] = {1,2,3,4,5};
+int main() {
+    int arr[5] = {1, 2, 3, 4, 5};
     f1(arr, 5);
     f2(arr);
 }
@@ -206,7 +211,7 @@ class HourlyEmployee : public Employee // ':' 를 사용해서 상속
 }
 ```
 
-C++ allows us to drop the const when redefining in the derived class.
+C++ allows us to drop the `const` when redefining in the derived class.
 
 명시적으로 함수를 호출함으로써 부모 Class의 멤버 함수에 접근할 수 있음:
 
@@ -316,9 +321,9 @@ Derived class can have more than one base class!
 
 ### VIRTUAL FUNCTION BASICS
 
-Polymorphism과 Virtual Function은 Very important OOP principle!
+Polymorphism과 Virtual Function은 **Very important OOP principle!**
 
-**Polymorphism**
+**Polymorphism:**
 - Associating many meanings to one function
 - Virtual functions provide this capability
 - Fundamental principle of object-oriented programming!
@@ -326,7 +331,9 @@ Polymorphism과 Virtual Function은 Very important OOP principle!
 Virtual functions을 사용하면 컴파일러에게 실제 프로그램에서 사용이 될 때까지 implement를 대기하라고 명령한다.
 
 **Late Binding (Dynamic Binding):**  
-Virtual functions implement late binding
+
+Virtual functions implement late binding.
+
 **예시:**
 
 ```cpp
@@ -388,6 +395,7 @@ a.savings();  // Car의 bill()이 호출됨 (late binding)
 - Late binding is "on the fly", so programs run slower
 
 **결론:**  
+
 If virtual functions not needed, should not be used.
 
 ### Pure Virtual Functions
@@ -588,7 +596,7 @@ anObject(42);
 
 `&&`, `||`, and **comma operator**은 overload가 가능하지만, overload를 하게 되면 **short-circuit의 특성을 잃는다**.
 
-왜냐하면 overload를 위해 변수의 타입을 정하기 위해 모든 인자를 평가해야하기 때문에, 평가에 대한 이점이 사라진다.  
+왜냐하면 overload를 위해 변수의 타입을 정하기 위해 모든 인자를 평가해야하기 때문에, 평가에 대한 이점이 사라진다.
 comma operator은 어떻게 써도 성능에 영향을 주지 않는다.
 
 **결론:**  
@@ -798,51 +806,64 @@ fullAmount = 25 + baseAmount;  // ❌ illegal (member function이면 불가)
 Friend function으로 `operator+`를 구현하면 양방향 형변환이 모두 가능!
 
 ### Friend Classes
+
 Entire classes can be friends. Similar to function being friend to class.
-friend class F 형식을 통해 선언할 수 있고, NOT reciprocated다.
+`friend class F` 형식을 통해 선언할 수 있고, **NOT reciprocated**다.
+
 ```cpp
 class C {
-    friend class F; // F는 C의 모든 멤버에 접근가능하지만, 반대는 아님.
+    friend class F; // F는 C의 모든 멤버에 접근가능하지만, 반대는 아님
 };
 ```
 
-Overload Array Operator[]
-operator[]도 overload가 가능하다. 
-Operator must return a reference! 꼭 member function이어야 한다.
+**Overload Array Operator `[]`:**
+
+`operator[]`도 overload가 가능하다.  
+Operator must return a **reference**! 꼭 **member function**이어야 한다.
 
 ## 13주차
 ### Function Templates
-overloading swap function을 만든다고 가정하면, 각각 다른 type으로 구현해야한다.
-이를 Function Template으로 해결할 수 있다.
+
+Overloading swap function을 만든다고 가정하면, 각각 다른 type으로 구현해야한다.  
+이를 **Function Template**으로 해결할 수 있다.
+
 ```cpp
-template<class T> // template prefix, class는 type이라는 뜻이고, typename으로 바꿔서 쓸 수 있다.
-void swapValues( T& var1, T& var2 )
+template<class T> // template prefix, class는 type이라는 뜻이고, typename으로 바꿔서 쓸 수 있다
+void swapValues(T& var1, T& var2)
 {
-T temp = var1;
-var1 = var2;
-var2 = temp;
+    T temp = var1;
+    var1 = var2;
+    var2 = temp;
 }
 ```
-T can be replaced by any type. can use other than "T", but T is "traditional" usage.
+
+`T` can be replaced by any type. can use other than "T", but T is "traditional" usage.
 
 ### MORE ABOUT TEMPLATES
-Multiple Type Parameters
+
+**Multiple Type Parameters:**
+
 ```cpp
 template<class T1, class T2>
 ```
-템플릿에서는 보통 하나의 치환 가능한 타입만 필요하며, 사용되지 않는 템플릿 매개변수는 허용되지 않는다. 각 템플릿 매개변수는 반드시 정의에서 사용되어야 하며, 그렇지 않으면 컴파일러가 타입을 추론하지 못해 함수 코드를 생성할 수 없고, 그 결과 함수 호출 시 적절한 정의를 찾지 못해 오류가 발생한다.
 
-Inappropriate Types in Templates
-Cannot use type for which assignment operator isn’t defined.
-e.g. an array. (not std::array)
+템플릿에서는 보통 하나의 치환 가능한 타입만 필요하며, 사용되지 않는 템플릿 매개변수는 허용되지 않는다.  
+각 템플릿 매개변수는 반드시 정의에서 사용되어야 하며, 그렇지 않으면 컴파일러가 타입을 추론하지 못해 함수 코드를 생성할 수 없고, 그 결과 함수 호출 시 적절한 정의를 찾지 못해 오류가 발생한다.
 
-array를 쓰기 위해선
+**Inappropriate Types in Templates:**
+
+Cannot use type for which assignment operator isn't defined.  
+e.g. an array (not `std::array`)
+
+Array를 쓰기 위해선:
+
 ```cpp
 // void foo(int a[3])
 // {
-// for(auto &i : a) ERROR! No begin() with pointer type
-// cout << &i << endl;
+//     for(auto &i : a) ERROR! No begin() with pointer type
+//     cout << &i << endl;
 // }
+
 template<class T, int N>
 void foo(T (&a)[N])
 {
@@ -852,6 +873,7 @@ void foo(T (&a)[N])
 ```
 
 ### Class Templates
+
 Once template defined, can declare objects of the class.
 
 ```cpp
@@ -869,20 +891,25 @@ private:
     T first;
     T second;
 };
+
 template<class T>
 Pair<T>::Pair(T firstVal, T secondVal)
 {
     first = firstVal;
     second = secondVal;
 }
+
 template<class T>
 void Pair<T>::setFirst(T newVal)
 {
     first = newVal;
 }
 ```
-위 코드처럼 Class도 template를 사용해서 선언할 수 있다.
-Each definition, Requires template prefix before each definition. Class name before :: is "Pair<T>"
+
+위 코드처럼 Class도 template를 사용해서 선언할 수 있다.  
+Each definition, Requires **template prefix** before each definition. Class name before `::` is `Pair<T>`
+
+**Object 선언 예제:**
 
 ```cpp
 Pair<int> score;
@@ -890,7 +917,9 @@ Pair<char> seats;
 score.setFirst(3);
 score.setSecond(0);
 ```
-이렇게 object를 선언할 수 있다.
+
+**Function Template with Class Template:**
+
 ```cpp
 template<class T>
 T addUp(const Pair<T>& thePair);
@@ -898,16 +927,18 @@ T addUp(const Pair<T>& thePair);
 // returns sum of two values in thePair
 ```
 
-Restrictions on Type Parameter
+**Restrictions on Type Parameter:**
 - Assignment operator must be "well-behaved"
 - Copy constructor must also work
 - If T involves pointers, then destructor must be suitable!
 
-Templates and Inheritance
+**Templates and Inheritance:**
+
 Derived template classes. Can derive from template or non-template class.
+
 ```cpp
 template <class T>
-class Parent{
+class Parent {
     T val;
 public:
     Parent(T arg1) { val = arg1; }
@@ -916,16 +947,20 @@ public:
 
 class Child : public Parent<int> {
 public:
-    Child(int a) : Parent<int>(a){}
+    Child(int a) : Parent<int>(a) {}
 };
+
 template <class Z>
 class Child : public Parent<Z> {
 public:
-    Child(Z a) : Parent<Z>(a){}
+    Child(Z a) : Parent<Z>(a) {}
 };
 ```
-Type Definitions: typedef or using
+
+**Type Definitions: `typedef` or `using`:**
+
 They represent specialized class template name.
+
 ```cpp
 template <class T>
 using PairOfNums = Pair<T>;
@@ -934,16 +969,263 @@ typedef Pair<int> PairOfInt;
 PairOfInt pair1, pair2;
 PairOfNums<float> fpair1;
 ```
-using은 typedef의 상위호환이며, 펨플릿에 대한 정의가 가능하다.
 
+`using`은 `typedef`의 상위호환이며, 템플릿에 대한 정의가 가능하다.
 
-## UML
+## 14주차
+
+### Introduction to Vectors
+
+**Limitation of C-Arrays:**
+- The size of static array is fixed, and should be known at compile time
+- Dynamic array needs `malloc`/`free`/`new`/`delete`, which needs to be handled with care
+
+**STL Vectors:**
+
+STL Vectors are arrays that automatically grow and shrink. We do not care about the memory allocation/deallocation.
+
+```cpp
+std::vector<Base_Type> // Template STL Class
+std::vector<int> v;
+```
+
+**주요 특징:**
+- **Indexing**: indexed like arrays for access (e.g., `v[0]`, `v[1]`, `v[k]`, ...)
+  - 값을 입력하기 전까진 index방식으로 접근할 수 없음
+- **Adding elements**: `push_back()`
+- **Querying the count of elements**: `size()`
+
+**Vector Efficiency:**
+
+Member function `capacity()`:
+- Returns memory currently allocated
+- Not same as `size()`
+- Typically, `capacity >= size`
+- Automatically increased as needed
+- In practice, when capacity is not enough, the capacity is doubled
+
+효율성이 중요한 경우, `v.reserve()`를 통해 미리 세팅할 수 있다.
+
+`push_back` 반복 시:
+- capacity 부족 → 재할당
+- 메모리 복사 발생
+- 성능 저하
+
+```cpp
+v.reserve(32);          // pre-set capacity to 32
+v.reserve(v.size()+10); // allocates 10 more elements
+```
+
+### STANDARD TEMPLATE LIBRARY
+
+- Set of C++ template classes
+- Software library for C++, having all such data structures
+- Code quickly, efficiency, generic programming
+
+**Main components:**
+- **Container**: Stores objects or data of arbitrary types
+- **Iterator**: Step through elements in containers
+- **Algorithm**: Performs particular tasks using iterator (Sort, search)
+- **Adaptors**: Wrapping common container to implement data structures (stack, queue, priority_queue)
+
+**Standard Containers in STL:**
+
+**Sequence containers** (ordered collections):
+- `vector`: dynamic array
+- `list`: doubly linked list
+- `deque`: double-ended queue (adapted to stack and queue)
+
+**Associative containers** (unordered collections):
+- `set`, `multiset`
+- `map`: dictionary (internally ordered by balanced binary tree)
+- `multimap`: similar to map, but with duplicate keys
+- `unordered_map`: dictionary with hash
+
+### ITERATORS
+
+Generalization of a pointer to STL containers/adaptors.
+- Typically even implemented with pointer!
+
+**"Abstraction" of iterators:**
+- Designed to hide details of implementation
+- Provide consistent interface across different container classes
+
+**Each container class has "own" iterator type:**
+- Similar to how each data type has own pointer type
+
+**Manipulating Iterators:**
+
+Recall using overloaded operators:
+- `++`, `--`, `==`, `!=`, `*`
+- So if `p` is an iterator variable, `*p` gives access to data pointed to by `p`
+
+```cpp
+// return iterator for the first item in c
+std::vector<int>::iterator it = c.begin();
+// return iterator for after-last item in c
+// e.g., for size-2 vector, end() indicates index 2
+auto it2 = c.end();
+```
+
+**Cycling with Iterators:**
+
+Recall cycling ability:
+
+```cpp
+for(auto p = c.begin(); p != c.end(); p++)
+    process(*p); // *p is current data item
+// Powerful usage of auto!
+```
+
+**Vector Iterator Types:**
+
+```cpp
+std::vector<int>::iterator
+std::list<int>::iterator
+```
+
+**Iterator Classifications:**
+
+**Forward iterators** (`forward_list`, `unordered_map`, `unordered_set`):
+- `++` works on iterator
+
+**Bidirectional iterators** (`list`, `set`, `map`, `multiset`, `multimap`):
+- Both `++` and `--` work on iterator
+
+**Random-access iterators** (`vector`, `deque`, `array`):
+- `++`, `--`, and random access all work with iterator
+
+**Constant and Mutable Iterators:**
+
+Dereferencing operator's behavior dictates.
+
+**Constant iterator:**
+- `*` produces read-only version of element
+- Can use `*p` to assign to variable or output, but cannot change element in container
+
+```cpp
+std::vector<int> v = {1, 2, 3}; // or 컨테이너가 const이면, iterator도 반드시 const
+std::vector<int>::const_iterator p = v.begin();
+
+int x = *p;       // ✅ 읽기 가능
+std::cout << *p;  // ✅ 출력 가능
+*p = 5;           // ❌ 불가
+```
+
+**Mutable iterator:**
+- `*p` can be assigned value
+- Changes corresponding element in container
+- i.e.: `*p` returns an lvalue
+
+```cpp
+std::vector<int> v = {1, 2, 3};
+std::vector<int>::iterator p = v.begin();
+
+*p = 10;   // ✅ v[0]이 10으로 바뀜
+```
+
+**Reverse Iterators:**
+
+To cycle elements in reverse order:
+
+```cpp
+for(auto p = container.end(); p != container.begin(); p--) // end() is just "sentinel"!
+    cout << *p << " ";
+
+for(vector<int>::reverse_iterator rp = c.rbegin(); rp != c.rend(); rp++)
+    cout << *rp << " ";
+```
+
+### CONTAINERS
+
+**Container classes in STL:**
+- Different kinds of data structures
+- Linked lists, queues, stacks
+
+**Arranges list data:**
+- 1st element, next element, … to last element
+- Vector is a container class
+
+**Sequential Containers:**
+
+Linked list is sequential container:
+- Linear collection of data elements
+- Each element points to the next element
+
+STL has no "singly linked list". Only "doubly linked list": template class `list`
+
+```cpp
+list<int>::iterator iter;
+for (iter = listObject.begin(); iter != listObject.end(); iter++)
+    cout << *iter << " ";
+
+cout << iter[2] << endl; // ❌ 불가능! 컴파일 에러. linked list는 random access가 아니기 때문
+```
+
+**Associative Containers:**
+- Simple database or dictionary
+- Store data with key: each data item has key
+
+**Set Template Class:**
+
+- Simplest container possible
+- Stores elements without repetition: 1st insertion places element in set
+- Each element is own key
+- Designed to be efficient: Stores values in sorted order
+
+```cpp
+// Can specify order: set<T, Ordering> s;
+set<int, greater<int>>, set<int, CustomOrder> // Ordering is well-behaved ordering relation that returns bool
+
+cout << "The set contains:\n";
+set<char>::const_iterator p;
+for (p = s.begin(); p != s.end(); p++)
+    cout << *p << " ";
+cout << endl;
+
+cout << "Set contains 'C': ";
+if (s.find('C') == s.end())
+    cout << " no " << endl;
+else
+    cout << " yes " << endl;
+
+cout << "Removing C.\n";
+s.erase('C');
+```
+
+**Map Template Class:**
+
+A function given as set of ordered pairs:
+- For each value `first`, at most one value `second` in map considering `(first, second)` pair
+
+Can use `[]` notation to access the map:
+- For both storage and retrieval
+
+Stores in sorted order, like set.
+
+```cpp
+map<string, string> planets;
+planets["Mercury"] = "Hot planet";
+planets["Venus"] = "Atmosphere of sulfuric acid";
+planets["Earth"] = "Home";
+planets["Mars"] = "The Red Planet";
+planets["Jupiter"] = "Largest planet in our solar system";
+
+if (planets.find("Mercury") != planets.end())
+    cout << "Mercury is in the map." << endl;
+
+if (planets.find("Ceres") == planets.end())
+    cout << "Ceres is not in the map." << endl << endl;
+```
+
+## 15주차
 
 ### What is Modeling?
 
 Modeling is process of abstraction of a real-world system.
 
 **Why Modeling Software?**  
+
 Software is getting more complex. Need simpler representations of complex systems.
 
 ### UML (Unified Modeling Language)
@@ -958,60 +1240,30 @@ Software is getting more complex. Need simpler representations of complex system
 - Able to capture the logical software architecture
 
 **Architecture:**  
+
 Requirement → Design → Implementation → Verification → Deployment → Maintenance
 
 ### UML Diagrams
 
 **Behaviour Diagram:**  
+
 Activity, Use Case, Sequence, Communication, Interaction, State Machine
 
 **Structure Diagram:**  
+
 Class, Component, Package, Deployment, Object
 
 ### Diagram Types
 
-**Use case diagram**
+**Use case diagram:**
 - Describe functional behavior of the system
 - In user's perspective
 
-**Class diagram**
+**Class diagram:**
 - Describe the static structure of the system
 
-**Sequence diagram**
+**Sequence diagram:**
 - Describe the dynamic behavior between actors and the system
 
-**Activity diagram**
+**Activity diagram:**
 - Describe the dynamic behaviors of the system
-
-### Use Case Diagram Details
-
-**Requirements:**
-- **Functional requirements:** e.g., register user, send email, display picture
-- **Non-functional requirements:** e.g., security (must use AES encryption), performance (must be done within 3 seconds)
-- High level view of what system does
-
-**Key Components:**
-- **Actor:** models an external entity which interacts with the system
-- **Use Case:** represents a class of functionality provided by the system
-- **System boundary:** represents the scope of the system
-
-### Use Case Diagram Relationship
-
-**Types of relationship:**
-
-1. **Association relationship**
-   - Represents interaction between actors and use cases
-   - Using a line to connect the actor and the use case
-
-2. **Include relationship**
-   - Represents a use case includes the functionality of another use case
-   - Using a dashed arrow to indicate including and included use case
-
-3. **Extend relationship**
-   - Represents optional or exceptional cases
-   - Using a dashed arrow and "extend" keyword
-
-4. **Generalization relationship**
-   - Represents one use case is a specialized version of another
-   - Arrow pointing from specialized one to general one
-
