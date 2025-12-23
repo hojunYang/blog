@@ -1,7 +1,7 @@
 <footer>
 	<div class="container">
 		<p>&copy; {new Date().getFullYear()} Hojun Yang. All rights reserved.</p>
-		<p class="tagline">Contact: hojun5104@gmail.com</p>
+		<p class="tagline">Contact: hojun5104@gmail.com</p> 
 	</div>
 </footer>
 
