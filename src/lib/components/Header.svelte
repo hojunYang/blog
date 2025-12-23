@@ -1,19 +1,41 @@
 <script lang="ts">
 	let currentPath = $state('');
+	let lastScrollY = $state(0);
+	let isScrollingDown = $state(false);
 	
 	$effect(() => {
 		currentPath = window.location.pathname;
+		
+		const handleScroll = () => {
+			const currentScrollY = window.scrollY;
+			
+			if (currentScrollY > lastScrollY && currentScrollY > 50) {
+				// 스크롤 다운
+				isScrollingDown = true;
+			} else {
+				// 스크롤 업
+				isScrollingDown = false;
+			}
+			
+			lastScrollY = currentScrollY;
+		};
+		
+		window.addEventListener('scroll', handleScroll, { passive: true });
+		
+		return () => {
+			window.removeEventListener('scroll', handleScroll);
+		};
 	});
 </script>
 
-<header>
+<header class:hidden={isScrollingDown}>
 	<nav>
 		<div class="container">
 			<a href="/" class="logo">
 				<span class="logo-text">Hojun Yang</span>
 			</a>
 			<div class="nav-links">
-				<a href="/post" class:active={currentPath === '/post'}>모든 글</a>
+				<a href="/post" class:active={currentPath === '/post'}>포스트</a>
 			</div>
 		</div>
 	</nav>
@@ -21,36 +43,16 @@
 
 <style>
 	header {
-		position: sticky;		
-		max-width: var(--container-max-width);
+		position: sticky;
 		top: 0;
-		-webkit-mask-image: linear-gradient(to bottom, black 0%, black 70%, transparent 100%);
-		mask-image: linear-gradient(to bottom, black 0%, black 70%, transparent 100%);
+		width: 100%;
+		transform: translateY(0);
+		transition: transform 0.5s ease-in-out;
+		z-index: 100;
 	}
 
-	header::before {
-		content: '';
-		position: absolute;
-		top: 0;
-		left: 0;
-		right: 0;
-		bottom: 0;
-		background: linear-gradient(to top, rgb(247, 250, 252, 0.80), rgb(247, 250, 252, 0.95));
-		backdrop-filter: blur(15px);
-		-webkit-backdrop-filter: blur(15px);
-		z-index: -1;
-	}
-
-	header::after {
-		content: '';
-		position: absolute;
-		bottom: 0;
-		left: 0;
-		right: 0;
-		background: linear-gradient(to top, rgba(247, 250, 252, 0.7), rgba(247, 250, 252, 0.75));
-		backdrop-filter: blur(15px);
-		-webkit-backdrop-filter: blur(15px);
-		z-index: -1;
+	header.hidden {
+		transform: translateY(-100%);
 	}
 
 	nav {
