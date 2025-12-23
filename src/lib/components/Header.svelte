@@ -27,7 +27,7 @@
 		};
 	});
 </script>
-
+ 
 <header class:hidden={isScrollingDown}>
 	<nav>
 		<div class="container">
