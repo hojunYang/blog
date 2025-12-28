@@ -1,18 +1,27 @@
 import { readFileSync, readdirSync } from 'fs';
 import { join } from 'path';
 import matter from 'gray-matter';
-import { marked } from 'marked';
+import { marked, Renderer } from 'marked';
 import { markedHighlight } from 'marked-highlight';
 import hljs from 'highlight.js';
 import type { BlogPost } from '$lib/types';
 
-const postsDirectory = join(process.cwd(), 'src', 'lib', 'posts');
+const postsDirectory = join(process.cwd(), 'static', 'posts');
 
 // marked 설정
 marked.setOptions({
 	breaks: true,
 	gfm: true
 });
+
+// 이미지 렌더러 커스터마이징 (가로폭 제한 및 비율 유지)
+const renderer = new Renderer();
+renderer.image = ({ href, title, text }) => {
+	const titleAttr = title ? ` title="${title}"` : '';
+	return `<img src="${href}" alt="${text}"${titleAttr} style="max-width: 100%; height: auto; display: block; margin: 1rem auto;">`;
+};
+
+marked.use({ renderer });
 
 // marked에 highlight.js 확장 추가
 marked.use(
@@ -59,7 +68,7 @@ export async function getPostById(id: string): Promise<BlogPost | null> {
 		const fileContents = readFileSync(fullPath, 'utf8');
 		const { data, content } = matter(fileContents);
 
-		// 마크다운을 HTML로 변환
+		// 마크다운을 HTML로 변환 (이미지 경로는 마크다운에서 /posts/... 형태로 작성)
 		const htmlContent = await marked(content);
 
 		return {

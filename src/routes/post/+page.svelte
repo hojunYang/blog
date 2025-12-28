@@ -208,25 +208,18 @@
 		color: var(--color-text-muted);
 	}
 
-	@media (max-width: 1080px) {
-		/* .page-header h1 {
-			font-size: var(--font-3xl);
-		}
-
-		.page-header p {
-			font-size: var(--font-base);
-		} */
+	@media (max-width: 1200px) {
 
 		.filters {
 			padding: var(--spacing-md);
 		}
 
 		.posts-grid {
-			background: var(--color-bg-white);
+			background: transparent;
 			gap: var(--spacing-md);
-			border-radius: var(--radius-lg);
-			padding: var(--spacing-lg);
-			box-shadow: var(--shadow-md);
+			border-radius: 0;
+			padding: 0;
+			box-shadow: none;
 		}
 	}
 </style>

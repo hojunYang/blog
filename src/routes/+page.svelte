@@ -306,10 +306,10 @@
 	.posts-list {
 		display: flex;
 		flex-direction: column;
-		gap: 0;
+		gap: var(--spacing-md);
 	}
 
-	@media (max-width: 1080px) {
+	@media (max-width: 1200px) {
 		.desktop-only {
 			display: none;
 		}
@@ -325,15 +325,16 @@
 		}
 
 		.recent-posts {
-			background: var(--color-bg-white);
-			border-radius: var(--radius-lg);
-			padding: var(--spacing-lg);
-			box-shadow: var(--shadow-md);
+			background: transparent;
+			border-radius: 0;
+			padding: 0;
+			box-shadow: none;
 		}
 
 		.recent-posts h4 {
 			font-size: var(--font-xl);
 			margin-bottom: var(--spacing-md);
+			padding: 0 var(--spacing-xs);
 		}
 	}
 </style>

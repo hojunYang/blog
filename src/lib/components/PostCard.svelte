@@ -6,30 +6,20 @@
 	}
 
 	let { post }: Props = $props();
-
-	function formatDate(dateString: string): string {
-		const date = new Date(dateString);
-		return date.toLocaleDateString('ko-KR', {
-			year: 'numeric',
-			month: 'long',
-			day: 'numeric'
-		});
-	}
 </script>
 
 <article class="post-card">
 	<a href="/post/{post.id}" class="post-link">
 		<div class="post-header">
 			<h2>{post.title}</h2>
-			<div class="post-meta">
-				<span class="date">{formatDate(post.date)}</span>
-			</div>
 		</div>
 		<p class="excerpt">{post.excerpt}</p>
-		<div class="tags">
-			{#each post.tags as tag}
-				<span class="tag">{tag}</span>
-			{/each}
+		<div class="bottom-section">
+			<div class="tags">
+				{#each post.tags as tag}
+					<span class="tag">{tag}</span>
+				{/each}
+			</div>
 		</div>
 		<div class="read-more">
 			더 읽기 →
@@ -74,20 +64,6 @@
 		line-height: 1.3;
 	}
 
-	.post-meta {
-		display: flex;
-		gap: var(--spacing-md);
-		flex-wrap: wrap;
-		font-size: var(--font-sm);
-		color: var(--color-text-muted);
-	}
-
-	.date {
-		display: flex;
-		align-items: center;
-		gap: var(--spacing-xs);
-	}
-
 	.excerpt {
 		color: var(--color-text-secondary);
 		line-height: 1.6;
@@ -95,11 +71,19 @@
 		flex-grow: 1;
 	}
 
+	.bottom-section {
+		display: flex;
+		justify-content: space-between;
+		align-items: flex-start;
+		gap: var(--spacing-md);
+		margin-bottom: var(--spacing-md);
+	}
+
 	.tags {
 		display: flex;
 		flex-wrap: wrap;
 		gap: var(--spacing-sm);
-		margin-bottom: var(--spacing-md);
+		flex: 1;
 	}
 
 	.tag {
@@ -121,43 +105,38 @@
 		color: var(--color-text-hover);
 	}
 
-	@media (max-width: 1080px) {
+	@media (max-width: 1200px) {
 		.post-card {
-			background: transparent;
-			border-radius: 0;
-			padding: var(--spacing-lg) 0;
-			box-shadow: none;
+			background: var(--color-bg-white);
+			border-radius: var(--radius-md);
+			padding: var(--spacing-md);
+			box-shadow: var(--shadow-md);
 			aspect-ratio: auto;
-			border-bottom: 1px solid var(--color-border-light);
-			transition: background-color var(--transition-fast);
-		}
-
-		.post-card:last-child {
-			border-bottom: none;
+			border: none;
+			transition: all var(--transition-fast);
+			display: flex;
+			flex-direction: column;
 		}
 
 		.post-card:hover {
-			transform: none;
-			box-shadow: none;
-			background-color: rgba(0, 0, 0, 0.02);
+			transform: translateY(-5px);
+			box-shadow: var(--shadow-lg);
 		}
 
 		.post-link {
-			height: auto;
+			height: 100%;
+			display: flex;
+			flex-direction: column;
 		}
 
 		.post-header {
 			margin-bottom: var(--spacing-sm);
+			flex-shrink: 0;
 		}
 
 		h2 {
 			font-size: var(--font-lg);
-			margin-bottom: var(--spacing-xs);
-		}
-
-		.post-meta {
-			font-size: var(--font-xs);
-			gap: var(--spacing-sm);
+			margin-bottom: 0;
 		}
 
 		.excerpt {
@@ -168,12 +147,22 @@
 			line-clamp: 2;
 			-webkit-box-orient: vertical;
 			overflow: hidden;
-			flex-grow: 0;
+			flex-shrink: 0;
+		}
+
+		.bottom-section {
+			display: flex;
+			justify-content: flex-start;
+			align-items: flex-start;
+			margin-top: auto;
+			margin-bottom: 0;
+			gap: var(--spacing-md);
 		}
 
 		.tags {
 			margin-bottom: 0;
 			gap: var(--spacing-xs);
+			flex: 1;
 		}
 
 		.tag {
@@ -183,10 +172,6 @@
 
 		.read-more {
 			display: none;
-		}
-
-		.date {
-			font-size: var(--font-xs);
 		}
 	}
 </style>
