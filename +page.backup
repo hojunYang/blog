@@ -1,0 +1,140 @@
+<script lang="ts">
+	import PostCard from '$lib/components/PostCard.svelte';
+	import type { PageData } from './$types';
+
+	interface Props {
+		data: PageData;
+	}
+
+	let { data }: Props = $props();
+	const recentPosts = $derived(data.recentPosts);
+</script>
+
+<svelte:head>
+	<title>홈 - Hojun Yang</title>
+</svelte:head>
+
+<div class="home">
+	<!-- <section class="hero">
+		<h1>안녕하세요! 👋</h1>
+		<p class="hero-text">
+			Svelte와 웹 개발에 관한 이야기를 나누는 공간입니다.<br />
+			최신 기술 트렌드와 개발 경험을 공유합니다.
+		</p>
+		<a href="/post" class="cta-button">모든 글 보기</a>
+	</section> -->
+
+	<section class="recent-posts">
+		<h4>최근 포스트</h4>
+		<div class="posts-grid">
+			{#each recentPosts as post}
+				<PostCard {post} />
+			{/each}
+		</div>
+	</section>
+</div>
+
+<style>
+	.home {
+		animation: fadeIn 0.5s ease-in;
+	}
+
+	@keyframes fadeIn {
+		from {
+			opacity: 0;
+			transform: translateY(20px);
+		}
+		to {
+			opacity: 1;
+			transform: translateY(0);
+		}
+	}
+
+	/* .hero {
+		text-align: center;
+		padding: var(--spacing-3xl) var(--spacing-xl);
+		background: var(--color-bg-white);
+		border-radius: var(--radius-lg);
+		box-shadow: var(--shadow-md);
+		margin-bottom: var(--spacing-2xl);
+	}
+
+	.hero h1 {
+		font-size: var(--font-5xl);
+		margin: 0 0 var(--spacing-md) 0;
+		background: var(--color-primary);
+		-webkit-background-clip: text;
+		-webkit-text-fill-color: transparent;
+		background-clip: text;
+	} */
+
+	/* .hero-text {
+		font-size: var(--font-xl);
+		color: var(--color-text-secondary);
+		line-height: 1.6;
+		margin: 0 0 var(--spacing-xl) 0;
+	} */
+
+	/* .cta-button {
+		display: inline-block;
+		background: var(--color-primary);
+		color: white;
+		padding: var(--spacing-md) var(--spacing-xl);
+		border-radius: var(--radius-md);
+		text-decoration: none;
+		font-weight: 600;
+		font-size: var(--font-lg);
+		transition: all var(--transition-base);
+		box-shadow: var(--shadow-primary);
+	}
+
+	.cta-button:hover {
+		transform: translateY(-2px);
+		box-shadow: var(--shadow-primary-lg);
+	} */
+
+	.recent-posts {
+		margin-top: var(--spacing-md);
+	}
+
+	.recent-posts h4 {
+		font-size: var(--font-xl);
+		margin: 0 0 var(--spacing-xl) 0;
+		color: var(--color-text-primary);
+	}
+
+	.posts-grid {
+		display: grid;
+		/* auto-fill: 가능한 많은 열을 생성 (빈 열 포함), auto-fit: 콘텐츠에 맞게 열을 축소 */
+		grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+		gap: var(--spacing-xl);
+	}
+
+	@media (max-width: 768px) {
+		/* .hero {
+			padding: var(--spacing-xl) var(--spacing-md);
+		}
+
+		.hero h1 {
+			font-size: var(--font-3xl);
+		}
+
+		.hero-text {
+			font-size: var(--font-base);
+		} */
+
+		/* .cta-button {
+			padding: var(--spacing-sm) var(--spacing-lg);
+			font-size: var(--font-base);
+		} */
+
+		.recent-posts h4 {
+			font-size: var(--font-2xl);
+		}
+
+		.posts-grid {
+			grid-template-columns: 1fr;
+			gap: var(--spacing-lg);
+		}
+	}
+</style>
