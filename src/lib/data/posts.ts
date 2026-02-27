@@ -46,14 +46,63 @@ type ParsedPost = {
 	filename: string;
 };
 
-function parseRefsFromContent(content: string): string[] {
-	const refs = new Set<string>();
-	const refRegex = /\[\[([^[\]]+)\]\]/g;
-	let match;
-	while ((match = refRegex.exec(content)) !== null) {
-		refs.add(match[1].trim());
+type WikiLink = {
+	targetId: string;
+	alias?: string;
+};
+
+const WIKI_LINK_PATTERN = /\[\[([^[\]]+?)\]\]/g;
+
+function parseWikiToken(rawToken: string): WikiLink | null {
+	const [targetPart, ...aliasParts] = rawToken.split('|');
+	const targetId = targetPart?.trim() ?? '';
+	if (!targetId) {
+		return null;
 	}
-	return Array.from(refs);
+
+	const aliasRaw = aliasParts.join('|').trim();
+	return {
+		targetId,
+		alias: aliasRaw.length > 0 ? aliasRaw : undefined
+	};
+}
+
+function extractWikiLinks(content: string): WikiLink[] {
+	const links: WikiLink[] = [];
+	const regex = new RegExp(WIKI_LINK_PATTERN);
+	let match: RegExpExecArray | null;
+	while ((match = regex.exec(content)) !== null) {
+		const parsed = parseWikiToken(match[1]);
+		if (!parsed) continue;
+		links.push(parsed);
+	}
+	return links;
+}
+
+function parseRefsFromContent(content: string): string[] {
+	return Array.from(new Set(extractWikiLinks(content).map((link) => link.targetId)));
+}
+
+function escapeMarkdownLinkText(text: string): string {
+	return text.replace(/\\/g, '\\\\').replace(/\]/g, '\\]');
+}
+
+function convertWikiLinksToMarkdown(content: string, validPostIds: Set<string>): string {
+	const regex = new RegExp(WIKI_LINK_PATTERN);
+	return content.replace(regex, (_full, rawToken: string) => {
+		const parsed = parseWikiToken(rawToken);
+		if (!parsed) {
+			return rawToken.trim();
+		}
+
+		const plainText = parsed.alias ?? parsed.targetId;
+		if (!validPostIds.has(parsed.targetId)) {
+			return plainText;
+		}
+
+		const href = `/post/${encodeURIComponent(parsed.targetId)}`;
+		return `[${escapeMarkdownLinkText(plainText)}](${href})`;
+	});
 }
 
 function readAllPosts(): { posts: ParsedPost[]; skipped: string[] } {
@@ -75,9 +124,7 @@ function readAllPosts(): { posts: ParsedPost[]; skipped: string[] } {
 				}
 
 				const tags = Array.isArray(data.tags) ? data.tags : [];
-				const frontmatterRefs = Array.isArray(data.refs) ? data.refs : [];
-				const bodyRefs = parseRefsFromContent(content);
-				const refs = Array.from(new Set([...frontmatterRefs, ...bodyRefs]));
+				const refs = parseRefsFromContent(content);
 
 				posts.push({
 					id: data.id,
@@ -114,11 +161,11 @@ export function getAllPostsMetadata(): Omit<BlogPost, 'content'>[] {
 		.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 }
 
-// 그래프 데이터 생성: 포스트/태그 노드 + 참조/공유태그/포스트-태그 엣지
+// 그래프 데이터 생성: 포스트/태그 노드 + 내부링크(ref)/포스트-태그 엣지
 export function buildGraphData(): GraphData {
 	const { posts, skipped } = readAllPosts();
 	const tagSet = new Set<string>();
-	posts.forEach((p) => p.tags.forEach((t) => tagSet.add(t)));
+	posts.forEach((p) => p.tags.forEach((tag) => tagSet.add(tag)));
 
 	const nodes: GraphNode[] = [
 		...posts.map((p) => ({
@@ -130,13 +177,13 @@ export function buildGraphData(): GraphData {
 			date: p.date,
 			author: p.author,
 			excerpt: p.excerpt,
-			weight: Math.max(1, p.tags.length || 1),
+			weight: Math.max(1, p.refs.length || 1),
 			score: 0
 		})),
-		...Array.from(tagSet).map((t) => ({
-			id: `tag:${t}`,
+		...Array.from(tagSet).map((tag) => ({
+			id: `tag:${tag}`,
 			type: 'tag' as const,
-			label: t,
+			label: tag,
 			weight: 1,
 			score: 0
 		}))
@@ -144,11 +191,11 @@ export function buildGraphData(): GraphData {
 
 	const links: GraphLink[] = [];
 
-	// ref edges (frontmatter.refs + [[id]])
+	// ref edges (본문 [[id]] / [[id|alias]])
 	const postIdSet = new Set(posts.map((p) => p.id));
 	posts.forEach((p) => {
 		p.refs.forEach((refId) => {
-			if (postIdSet.has(refId)) {
+			if (postIdSet.has(refId) && refId !== p.id) {
 				links.push({
 					type: 'ref',
 					source: `post:${p.id}`,
@@ -159,48 +206,34 @@ export function buildGraphData(): GraphData {
 		});
 	});
 
-	// shared-tag edges
-	for (let i = 0; i < posts.length; i++) {
-		for (let j = i + 1; j < posts.length; j++) {
-			const shared = posts[i].tags.filter((t) => posts[j].tags.includes(t));
-			if (shared.length > 0) {
-				links.push({
-					type: 'shared-tag',
-					source: `post:${posts[i].id}`,
-					target: `post:${posts[j].id}`,
-					tags: shared,
-					weight: shared.length
-				});
-			}
-		}
-	}
-
-	// post-tag edges
+	// post-tag edges (태그를 노드로 표시하기 위한 연결)
 	posts.forEach((p) => {
-		p.tags.forEach((t) => {
+		p.tags.forEach((tag) => {
 			links.push({
 				type: 'post-tag',
 				source: `post:${p.id}`,
-				target: `tag:${t}`,
+				target: `tag:${tag}`,
 				weight: 1
 			});
 		});
 	});
 
-	// score 계산 (post만): 링크 연결 가중치 합산
+	// score 계산 (post만): 글-글(ref) 연결만 반영
 	const scoreMap = new Map<string, number>();
 	const bump = (id: string, w: number) => {
 		if (!id.startsWith('post:')) return;
 		scoreMap.set(id, (scoreMap.get(id) ?? 0) + w);
 	};
 
-	links.forEach((l) => {
+	links
+		.filter((l) => l.type === 'ref')
+		.forEach((l) => {
 		const w = l.weight ?? 1;
 		const src = typeof l.source === 'string' ? l.source : l.source.id;
 		const tgt = typeof l.target === 'string' ? l.target : l.target.id;
 		bump(src, w);
 		bump(tgt, w);
-	});
+		});
 
 	nodes.forEach((n) => {
 		if (n.type === 'post') {
@@ -212,7 +245,7 @@ export function buildGraphData(): GraphData {
 		totalPosts: posts.length,
 		totalTags: tagSet.size,
 		refEdges: links.filter((l) => l.type === 'ref').length,
-		sharedTagEdges: links.filter((l) => l.type === 'shared-tag').length,
+		sharedTagEdges: 0,
 		postTagEdges: links.filter((l) => l.type === 'post-tag').length,
 		skippedFiles: skipped
 	};
@@ -226,9 +259,11 @@ export async function getPostById(id: string): Promise<BlogPost | null> {
 		const fullPath = join(postsDirectory, `${id}.md`);
 		const fileContents = readFileSync(fullPath, 'utf8');
 		const { data, content } = matter(fileContents);
+		const validPostIds = new Set(readAllPosts().posts.map((post) => post.id));
+		const normalizedMarkdown = convertWikiLinksToMarkdown(content, validPostIds);
 
-		// 마크다운을 HTML로 변환 (이미지 경로는 마크다운에서 /posts/... 형태로 작성)
-		const htmlContent = await marked(content);
+		// 마크다운을 HTML로 변환 (Obsidian식 내부링크 [[...]] 지원)
+		const htmlContent = await marked(normalizedMarkdown);
 
 		return {
 			id: data.id,

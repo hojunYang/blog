@@ -267,11 +267,6 @@
 						<span class="metric">조회수 {metrics.views}</span>
 					</div>
 				{/if}
-				<div class="tags">
-					{#each post.tags as tag}
-						<span class="tag">{tag}</span>
-					{/each}
-				</div>
 			</header>
 
 			<div class="post-content">
@@ -520,21 +515,6 @@
 	.metric {
 		font-size: var(--font-sm);
 		color: var(--text-muted);
-	}
-
-	.tags {
-		display: flex;
-		flex-wrap: wrap;
-		gap: var(--spacing-xs);
-	}
-
-	.tag {
-		background: transparent;
-		color: var(--text-muted);
-		padding: 2px 0;
-		border-radius: var(--radius-full);
-		font-size: var(--font-xs);
-		font-weight: 600;
 	}
 
 	.post-content {

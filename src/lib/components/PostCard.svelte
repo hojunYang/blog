@@ -14,11 +14,6 @@
 			<h2>{post.title}</h2>
 		</div>
 		<p class="excerpt">{post.excerpt}</p>
-		<div class="tags">
-			{#each post.tags as tag}
-				<span class="tag">{tag}</span>
-			{/each}
-		</div>
 	</a>
 </article>
 
@@ -65,23 +60,6 @@
 		margin: 0;
 	}
 
-	.tags {
-		display: flex;
-		flex-wrap: wrap;
-		gap: var(--spacing-sm);
-		flex: 1;
-	}
-
-	.tag {
-		border: none;
-		color: var(--text-muted);
-		padding: 2px 0;
-		border-radius: 999px;
-		font-size: var(--font-xxs);
-		font-weight: 600;
-		background: transparent;
-	}
-
 	@media (max-width: 1200px) {
 		.post-card {
 			padding: var(--spacing-md);
@@ -120,19 +98,5 @@
 			overflow: hidden;
 		}
 
-			.tags {
-				margin-bottom: 0;
-				gap: var(--spacing-xs);
-				flex: 1;
-			}
-
-		.tag {
-			font-size: var(--font-xxs);
-			padding: var(--spacing-xs) var(--spacing-sm);
-		}
-
-		.tags {
-			gap: var(--spacing-xs);
-		}
 	}
 </style>

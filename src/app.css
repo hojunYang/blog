@@ -8,6 +8,8 @@
 	--text-muted: #4a5568;
 	--stroke: rgba(0, 0, 0, 0.05);
 	--card-bg: #ffffff;
+	--control-bg: transparent;
+	--control-border: var(--stroke);
 	--link: #4f83ff;
 	--tag: #f2c94c;
 	--accent: #1bb1ff;
