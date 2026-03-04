@@ -13,3 +13,12 @@ jobs:
         run: |
           cd /home/hojun/Documents/blog
           git pull origin main
+      - name: Install dependencies and build
+        run: |
+          cd /home/hojun/Documents/blog
+          npm ci
+          npm run build
+      - name: Restart app
+        run: |
+          cd /home/hojun/Documents/blog
+          pm2 restart blog || pm2 start build/index.js --name blog
