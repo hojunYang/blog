@@ -44,3 +44,22 @@ The project now supports deduplicated likes/views with Postgres.
 1. Copy `.env.example` to `.env` and set `DATABASE_URL`, `VISITOR_HASH_SECRET`.
 2. Run SQL in `sql/metrics.sql` on your Postgres instance.
 3. Start app with `npm run dev`.
+
+## Secret posts
+
+Markdown posts live under `src/lib/server/content/posts`, so post source files are not served as static assets.
+
+Add `secret: true` and `password` to a post frontmatter to hide it from public lists and the home graph. It remains accessible by direct URL and requires the password on every visit.
+
+```md
+---
+id: "secret-01"
+title: "비밀 글 제목"
+excerpt: "목록에는 표시되지 않음"
+date: "2026-05-30"
+author: "양호준"
+tags: ["Private"]
+secret: true
+password: "원하는비밀번호"
+---
+```

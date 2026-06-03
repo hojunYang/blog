@@ -1,5 +1,5 @@
 import { error, json, type RequestHandler } from '@sveltejs/kit';
-import { getPostMetadata } from '$lib/data/posts';
+import { getPostMetadata } from '$lib/server/posts';
 import { getMetricsForEvent } from '$lib/server/metrics';
 
 export const GET: RequestHandler = async (event) => {

@@ -1,17 +1,32 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import type { MetricEventResult, PostComment, PostMetrics } from '$lib/types';
-	import type { PageData } from './$types';
+	import type { ActionData, PageData } from './$types';
 
 	interface Props {
 		data: PageData;
+		form?: ActionData;
 	}
 
-	let { data }: Props = $props();
-	const post = $derived(data.post);
-	let metrics = $state<PostMetrics | null>(data.metrics ?? null);
-	let comments = $state<PostComment[]>(data.comments ?? []);
+	type UnlockActionResult = {
+		locked?: boolean;
+		unlockError?: string;
+		post?: PageData['post'];
+		metrics?: PostMetrics;
+		comments?: PostComment[];
+	};
+
+	let { data, form }: Props = $props();
+	const actionResult = $derived((form ?? {}) as UnlockActionResult);
+	const post = $derived(actionResult.post ?? data.post ?? null);
+	const initialMetrics = $derived(actionResult.metrics ?? data.metrics ?? null);
+	const initialComments = $derived(actionResult.comments ?? data.comments ?? []);
+	const locked = $derived(Boolean(data.locked || actionResult.locked) && !post);
+	const unlockError = $derived(actionResult.unlockError ?? '');
+	let metrics = $state<PostMetrics | null>((form as UnlockActionResult | undefined)?.metrics ?? data.metrics ?? null);
+	let comments = $state<PostComment[]>((form as UnlockActionResult | undefined)?.comments ?? data.comments ?? []);
 	let likePending = $state(false);
+	let unlockPassword = $state('');
 	let commentAuthorName = $state('');
 	let commentPassword = $state('');
 	let commentContent = $state('');
@@ -235,9 +250,19 @@
 	});
 
 	$effect(() => {
-		if (!post) return;
-		metrics = data.metrics ?? fallbackMetrics(post.id);
-		comments = data.comments ?? [];
+		if (!post) {
+			metrics = null;
+			comments = [];
+			commentError = '';
+			commentSuccess = '';
+			commentPassword = '';
+			commentContent = '';
+			resetEditState();
+			return;
+		}
+
+		metrics = initialMetrics ?? fallbackMetrics(post.id);
+		comments = initialComments;
 		commentError = '';
 		commentSuccess = '';
 		commentPassword = '';
@@ -247,7 +272,7 @@
 </script>
 
 <svelte:head>
-	<title>{post ? post.title : '포스트를 찾을 수 없습니다'} - My Blog</title>
+	<title>{post ? post.title : locked ? '비밀글' : '포스트를 찾을 수 없습니다'} - My Blog</title>
 </svelte:head>
 
 <div class="post-page">
@@ -405,6 +430,29 @@
 				{/if}
 			</section>
 		</article>
+	{:else if locked}
+		<section class="locked-post" aria-labelledby="locked-post-title">
+			<a href="/post" class="back-link">← 목록으로 돌아가기</a>
+			<h1 id="locked-post-title">비밀글</h1>
+			<form method="POST" action="?/unlock" class="unlock-form">
+				<label for="post-password" class="unlock-label">비밀번호</label>
+				<input
+					id="post-password"
+					name="password"
+					type="password"
+					class="unlock-input"
+					bind:value={unlockPassword}
+					autocomplete="off"
+					required
+				/>
+				{#if unlockError}
+					<p class="unlock-error" aria-live="polite">{unlockError}</p>
+				{/if}
+				<button type="submit" class="unlock-submit" disabled={unlockPassword.trim().length === 0}>
+					확인
+				</button>
+			</form>
+		</section>
 	{:else}
 		<div class="not-found">
 			<h1>포스트를 찾을 수 없습니다</h1>
@@ -863,6 +911,83 @@
 		font-size: var(--font-sm);
 	}
 
+	.locked-post {
+		background: var(--color-bg-white);
+		border-radius: var(--radius-lg);
+		padding: var(--spacing-2xl);
+		box-shadow: var(--shadow-md);
+		max-width: 520px;
+		margin: 0 auto;
+	}
+
+	.locked-post h1 {
+		margin: 0 0 var(--spacing-lg) 0;
+		font-size: var(--font-3xl);
+		color: var(--color-text-primary);
+		line-height: 1.2;
+	}
+
+	.unlock-form {
+		display: flex;
+		flex-direction: column;
+		gap: var(--spacing-xs);
+	}
+
+	.unlock-label {
+		font-size: var(--font-sm);
+		color: var(--color-text-muted);
+	}
+
+	.unlock-input {
+		width: 100%;
+		border: 1px solid var(--color-border-light);
+		border-radius: var(--radius-sm);
+		background: transparent;
+		color: var(--color-text-primary);
+		padding: 0.65rem 0.8rem;
+		font-size: var(--font-sm);
+	}
+
+	.unlock-input:focus {
+		outline: none;
+		border-color: var(--color-primary);
+		background: var(--color-bg-light);
+	}
+
+	.unlock-error {
+		margin: var(--spacing-xs) 0 0 0;
+		color: #d12f2f;
+		font-size: var(--font-xs);
+	}
+
+	.unlock-submit {
+		align-self: flex-start;
+		margin-top: var(--spacing-sm);
+		border: 1px solid var(--color-border-light);
+		background: transparent;
+		color: var(--color-text-primary);
+		min-width: 88px;
+		padding: 0.48rem 0.9rem;
+		font-size: var(--font-sm);
+		font-weight: 600;
+		border-radius: var(--radius-sm);
+		cursor: pointer;
+		transition:
+			border-color var(--transition-fast),
+			color var(--transition-fast),
+			opacity var(--transition-fast);
+	}
+
+	.unlock-submit:hover {
+		border-color: var(--color-primary);
+		color: var(--color-primary);
+	}
+
+	.unlock-submit:disabled {
+		opacity: 0.5;
+		cursor: default;
+	}
+
 	.not-found {
 		text-align: center;
 		padding: var(--spacing-3xl) var(--spacing-xl);
@@ -899,6 +1024,10 @@
 	}
 
 	@media (max-width: 768px) {
+		.locked-post {
+			padding: var(--spacing-lg);
+		}
+
 		.post {
 			padding: var(--spacing-lg);
 		}

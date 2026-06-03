@@ -1,4 +1,4 @@
-import { getAllPostsMetadata } from '$lib/data/posts';
+import { getAllPostsMetadata } from '$lib/server/posts';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async () => {
@@ -8,4 +8,3 @@ export const load: PageServerLoad = async () => {
 		posts
 	};
 };
-

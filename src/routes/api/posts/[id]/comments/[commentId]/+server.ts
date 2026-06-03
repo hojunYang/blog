@@ -1,5 +1,5 @@
 import { error, json, type RequestHandler } from '@sveltejs/kit';
-import { getPostMetadata } from '$lib/data/posts';
+import { getPostMetadata } from '$lib/server/posts';
 import { deleteCommentForPost, updateCommentForPost } from '$lib/server/comments';
 import { ensureSameOrigin } from '$lib/server/metrics';
 
