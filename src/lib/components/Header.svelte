@@ -47,7 +47,8 @@ header {
 	top: 0;
 	width: 100%;
 	transform: translateY(0);
-	transition: transform 0.5s ease-in-out;
+	transition: transform var(--transition-base);
+	will-change: transform;
 	z-index: 100;
 	background: transparent;
 	box-shadow: none;
@@ -76,12 +77,13 @@ nav {
 		text-decoration: none;
 		color: var(--text);
 		font-size: var(--font-2xl);
-		transition: transform var(--transition-fast);
+		transition:
+			transform var(--transition-fast),
+			color var(--transition-fast);
 	}
 
-	.logo:hover {
-		transform: scale(1.05);
-		color: var(--color-text-hover);
+	.logo:active {
+		transform: scale(0.97);
 	}
 
 	/* .logo-icon {
@@ -104,13 +106,26 @@ nav {
 		font-size: var(--font-lg);
 		font-weight: 600;
 		border-radius: var(--radius-md);
-		transition: all var(--transition-base);
+		transition:
+			transform var(--transition-fast),
+			color var(--transition-fast);
 		padding: 6px 10px;
 	}
 
-	.nav-links a:hover {
-		transform: translateY(-1px);
-		color: var(--link);
+	.nav-links a:active {
+		transform: scale(0.97);
+	}
+
+	@media (hover: hover) and (pointer: fine) {
+		.logo:hover {
+			transform: scale(1.02);
+			color: var(--color-text-hover);
+		}
+
+		.nav-links a:hover {
+			transform: translateY(-1px);
+			color: var(--link);
+		}
 	}
 
 	@media (max-width: 768px) {
@@ -129,6 +144,30 @@ nav {
 		.nav-links a {
 			padding: var(--spacing-sm);
 			font-size: var(--font-sm);
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		header {
+			transform: none;
+			transition: opacity 120ms linear;
+			will-change: auto;
+		}
+
+		header.hidden {
+			transform: none;
+			opacity: 0;
+			pointer-events: none;
+		}
+
+		.logo:active,
+		.nav-links a:active {
+			transform: none;
+		}
+
+		.logo:hover,
+		.nav-links a:hover {
+			transform: none;
 		}
 	}
 </style>

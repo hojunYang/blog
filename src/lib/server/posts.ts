@@ -72,7 +72,7 @@ function normalizeTags(value: unknown): string[] {
 	if (!Array.isArray(value)) {
 		return [];
 	}
-	return value.map((tag) => normalizeString(tag)).filter(Boolean);
+	return Array.from(new Set(value.map((tag) => normalizeString(tag).trim()).filter(Boolean)));
 }
 
 function parseWikiToken(rawToken: string): WikiLink | null {

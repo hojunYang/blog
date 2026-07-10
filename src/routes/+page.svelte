@@ -46,24 +46,12 @@
 
 <style>
 	.home {
-		animation: fadeIn 0.4s ease-in;
 		min-height: 100vh;
-	}
-
-	@keyframes fadeIn {
-		from {
-			opacity: 0;
-			transform: translateY(12px);
-		}
-		to {
-			opacity: 1;
-			transform: translateY(0);
-		}
 	}
 
 	.graph-container {
 		position: relative;
-		width: 100vw;
+		width: 100%;
 		height: 100vh;
 		background: var(--bg);
 		overflow: hidden;

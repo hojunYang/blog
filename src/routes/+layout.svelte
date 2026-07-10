@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { afterNavigate, onNavigate } from '$app/navigation';
 	import '../app.css';
 	import '$lib/assets/fira_code.css';
 	import '$lib/assets/fonts.css';
@@ -9,6 +10,38 @@
 	import favicon from '$lib/assets/favicon.ico';
 
 	let { children } = $props();
+	let isFallbackNavigating = $state(false);
+
+	onNavigate((navigation) => {
+		if (
+			navigation.willUnload ||
+			typeof document === 'undefined' ||
+			window.matchMedia('(prefers-reduced-motion: reduce)').matches
+		) {
+			return;
+		}
+
+		if (document.startViewTransition) {
+			return new Promise((resolve) => {
+				document.startViewTransition(async () => {
+					resolve();
+					await navigation.complete;
+				});
+			});
+		}
+
+		if (isFallbackNavigating) return;
+
+		isFallbackNavigating = true;
+		return new Promise((resolve) => window.setTimeout(resolve, 160));
+	});
+
+	afterNavigate(() => {
+		if (!isFallbackNavigating) return;
+		window.requestAnimationFrame(() => {
+			isFallbackNavigating = false;
+		});
+	});
 </script>
 
 <svelte:head>
@@ -16,7 +49,7 @@
 	<title>Hojun Yang Blog</title>
 </svelte:head>
 
-<div class="app">
+<div class="app" class:route-transitioning={isFallbackNavigating}>
 	<Header />
 	<main>
 		{@render children()}
@@ -29,6 +62,19 @@
 		display: flex;
 		flex-direction: column;
 		min-height: 100vh;
+		transform: translateY(0) scale(1);
+		transition:
+			transform var(--transition-base),
+			opacity var(--transition-base);
+	}
+
+	.app.route-transitioning {
+		opacity: 0.22;
+		transform: scale(0.996);
+		transition:
+			transform var(--duration-fast) var(--ease-out),
+			opacity var(--duration-fast) var(--ease-out);
+		will-change: transform, opacity;
 	}
 
 	main {
@@ -42,6 +88,14 @@
 	@media (max-width: 1200px) {
 		main {
 			padding: var(--spacing-md);
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.app,
+		.app.route-transitioning {
+			transform: none;
+			transition: none;
 		}
 	}
 </style>

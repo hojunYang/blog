@@ -463,21 +463,6 @@
 </div>
 
 <style>
-	.post-page {
-		animation: fadeIn 0.5s ease-in;
-	}
-
-	@keyframes fadeIn {
-		from {
-			opacity: 0;
-			transform: translateY(20px);
-		}
-		to {
-			opacity: 1;
-			transform: translateY(0);
-		}
-	}
-
 	.post {
 		background: var(--color-bg-white);
 		border-radius: var(--radius-lg);
@@ -544,7 +529,10 @@
 		font-size: var(--font-sm);
 		font-weight: 700;
 		cursor: pointer;
-		transition: transform var(--transition-fast), opacity var(--transition-fast);
+		transition:
+			transform var(--transition-fast),
+			opacity var(--transition-fast),
+			color var(--transition-fast);
 		line-height: 1.2;
 	}
 
@@ -552,12 +540,15 @@
 		opacity: 0.7;
 		cursor: default;
 	}
-	.like-button:hover {
-		color: #ff2d55;
-		transform: scale(1.05);
-	}
 	.like-button.active {
 		color: #ff2d55;
+	}
+
+	@media (hover: hover) and (pointer: fine) {
+		.like-button:hover {
+			color: #ff2d55;
+			transform: scale(1.03);
+		}
 	}
 
 	.metric {
@@ -822,6 +813,7 @@
 		border-radius: var(--radius-sm);
 		cursor: pointer;
 		transition:
+			transform var(--transition-fast),
 			border-color var(--transition-fast),
 			color var(--transition-fast),
 			opacity var(--transition-fast);
@@ -893,7 +885,9 @@
 		cursor: pointer;
 		text-decoration: underline;
 		text-underline-offset: 2px;
-		transition: color var(--transition-fast);
+		transition:
+			transform var(--transition-fast),
+			color var(--transition-fast);
 	}
 
 	.comment-action-link:hover {
@@ -950,7 +944,11 @@
 		padding: 0.28rem 0.55rem;
 		border-radius: var(--radius-sm);
 		cursor: pointer;
-		transition: border-color var(--transition-fast), color var(--transition-fast), opacity var(--transition-fast);
+		transition:
+			transform var(--transition-fast),
+			border-color var(--transition-fast),
+			color var(--transition-fast),
+			opacity var(--transition-fast);
 	}
 
 	.comment-mini-button:hover {
@@ -1042,6 +1040,7 @@
 		border-radius: var(--radius-sm);
 		cursor: pointer;
 		transition:
+			transform var(--transition-fast),
 			border-color var(--transition-fast),
 			color var(--transition-fast),
 			opacity var(--transition-fast);
@@ -1084,12 +1083,17 @@
 		border-radius: var(--radius-md);
 		text-decoration: none;
 		font-weight: 600;
-		transition: all var(--transition-base);
+		transition:
+			transform var(--transition-fast),
+			box-shadow var(--transition-fast),
+			background-color var(--transition-fast);
 	}
 
-	.back-button:hover {
-		transform: translateY(-2px);
-		box-shadow: var(--shadow-primary);
+	@media (hover: hover) and (pointer: fine) {
+		.back-button:hover {
+			transform: translateY(-2px);
+			box-shadow: var(--shadow-primary);
+		}
 	}
 
 	@media (max-width: 768px) {
@@ -1163,6 +1167,13 @@
 
 		.comment-textarea {
 			font-size: var(--font-sm);
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.like-button:hover,
+		.back-button:hover {
+			transform: none;
 		}
 	}
 </style>

@@ -1,5 +1,6 @@
 <script lang="ts">
 	import PostCard from '$lib/components/PostCard.svelte';
+	import { getTagColor } from '$lib/tag-colors';
 	import type { PageData } from './$types';
 
 	interface Props {
@@ -12,6 +13,7 @@
 	let searchQuery = $state('');
 	let selectedTag = $state('');
 	const normalizedQuery = $derived(searchQuery.trim().toLowerCase());
+	const hasActiveFilters = $derived(normalizedQuery !== '' || selectedTag !== '');
 
 	const allTags = $derived(() => {
 		const tags = new Set<string>();
@@ -33,6 +35,15 @@
 			return matchesSearch && matchesTag;
 		});
 	});
+
+	function resetFilters(): void {
+		searchQuery = '';
+		selectedTag = '';
+	}
+
+	function selectTag(tag: string): void {
+		selectedTag = tag;
+	}
 </script>
 
 <svelte:head>
@@ -41,26 +52,51 @@
 
 <div class="post-page">
 	<div class="filters" role="search" aria-label="포스트 필터">
-		<div class="filter-field">
-			<label for="post-search" class="filter-label">제목 검색</label>
+		<div class="filter-field filter-field-search">
+			<label for="post-search" class="filter-label">포스트 검색</label>
 			<input
 				id="post-search"
 				type="text"
-				placeholder="검색어를 입력해 주세요"
+				placeholder="제목과 내용을 검색하세요"
 				aria-label="포스트 검색"
 				bind:value={searchQuery}
 				class="search-input"
 			/>
 		</div>
 
-		<div class="filter-field filter-field-select">
-			<label for="post-tag-filter" class="filter-label">태그</label>
-			<select id="post-tag-filter" class="tag-select" bind:value={selectedTag} aria-label="태그 필터">
-				<option value="">전체</option>
-			{#each allTags() as tag}
-					<option value={tag}>{tag}</option>
-			{/each}
-			</select>
+		<div class="filter-field filter-tags">
+			<span id="post-tag-filter-label" class="filter-label">태그</span>
+			<div class="tag-controls">
+				<div class="tag-filter-list" role="group" aria-labelledby="post-tag-filter-label">
+					<button
+						type="button"
+						class="tag-filter-button"
+						class:active={selectedTag === ''}
+						aria-pressed={selectedTag === ''}
+						onclick={() => selectTag('')}
+					>
+						전체
+					</button>
+
+					{#each allTags() as tag}
+						<button
+							type="button"
+							class="tag-filter-button"
+							class:active={selectedTag === tag}
+							aria-pressed={selectedTag === tag}
+							style={`--tag-color: ${getTagColor(tag)}`}
+							onclick={() => selectTag(tag)}
+						>
+							<span class="tag-dot" aria-hidden="true"></span>
+							{tag}
+						</button>
+					{/each}
+				</div>
+
+				{#if hasActiveFilters}
+					<button type="button" class="filter-reset" onclick={resetFilters}>초기화</button>
+				{/if}
+			</div>
 		</div>
 	</div>
 
@@ -88,56 +124,56 @@
 		padding: 0 var(--spacing-xl);
 	}
 
-	.posts-section {
-		animation: fadeIn 0.35s ease-in;
-	}
-
-	@keyframes fadeIn {
-		from {
-			opacity: 0;
-			transform: translateY(8px);
-		}
-		to {
-			opacity: 1;
-			transform: translateY(0);
-		}
-	}
-
 	.filters {
 		display: grid;
-		grid-template-columns: minmax(0, 1fr) 220px;
-		gap: var(--spacing-sm);
+		grid-template-columns: minmax(0, 1fr) auto;
+		gap: var(--spacing-xl);
 		align-items: end;
-		border: 1px solid var(--control-border, var(--stroke));
-		border-radius: 8px;
-		background: var(--control-bg, transparent);
-		padding: var(--spacing-sm);
-		margin-bottom: var(--spacing-xl);
+		border-bottom: 1px solid var(--stroke);
+		padding-bottom: var(--spacing-lg);
+		margin-bottom: var(--spacing-lg);
 	}
 
 	.filter-field {
 		display: flex;
 		flex-direction: column;
-		gap: 6px;
+		gap: 7px;
+	}
+
+	.filter-field-search {
+		min-width: 0;
+	}
+
+	.filter-tags {
+		min-width: 0;
 	}
 
 	.filter-label {
 		font-size: var(--font-xs);
+		font-weight: 600;
+		line-height: 1;
 		color: var(--text-muted);
 	}
 
 	.search-input,
-	.tag-select {
+	.tag-filter-button {
 		width: 100%;
-		height: 38px;
-		padding: 0 var(--spacing-sm);
-		border: 1px solid var(--control-border, var(--stroke));
-		border-radius: 7px;
-		background: var(--control-bg, transparent);
+		font-family: inherit;
+	}
+
+	.search-input {
+		height: 42px;
+		padding: 0 13px;
+		border: 1px solid rgba(15, 23, 42, 0.11);
+		border-radius: 6px;
+		background: var(--bg);
 		color: var(--text);
 		font-size: var(--font-sm);
-		font-family: inherit;
-		transition: border-color var(--transition-fast), opacity var(--transition-fast);
+		transition:
+			border-color var(--transition-fast),
+			box-shadow var(--transition-fast),
+			background-color var(--transition-fast),
+			transform var(--duration-press) var(--ease-out);
 	}
 
 	.search-input::placeholder {
@@ -145,35 +181,102 @@
 		opacity: 0.88;
 	}
 
-	.tag-select {
-		appearance: none;
-		background-image:
-			linear-gradient(45deg, transparent 50%, var(--text-muted) 50%),
-			linear-gradient(135deg, var(--text-muted) 50%, transparent 50%);
-		background-position:
-			calc(100% - 14px) calc(50% - 2px),
-			calc(100% - 9px) calc(50% - 2px);
-		background-size: 5px 5px, 5px 5px;
-		background-repeat: no-repeat;
-		padding-right: 28px;
+	.tag-controls,
+	.tag-filter-list {
+		display: flex;
+		align-items: center;
+		flex-wrap: wrap;
 	}
 
-	.search-input:hover,
-	.tag-select:hover {
-		border-color: rgba(31, 41, 51, 0.2);
+	.tag-controls {
+		gap: var(--spacing-sm);
 	}
 
-	.search-input:focus,
-	.tag-select:focus {
+	.tag-filter-list {
+		gap: 6px;
+	}
+
+	.tag-filter-button {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		gap: 6px;
+		width: auto;
+		height: 34px;
+		padding: 0 10px;
+		border: 1px solid rgba(15, 23, 42, 0.1);
+		border-radius: 6px;
+		background: transparent;
+		color: var(--text-muted);
+		font-size: var(--font-xs);
+		font-weight: 600;
+		line-height: 1;
+		cursor: pointer;
+		transition:
+			transform var(--duration-press) var(--ease-out),
+			border-color var(--transition-fast),
+			background-color var(--transition-fast),
+			color var(--transition-fast);
+	}
+
+	.tag-filter-button.active {
+		border-color: var(--text);
+		background: var(--text);
+		color: var(--bg);
+	}
+
+	.tag-dot {
+		width: 7px;
+		height: 7px;
+		border-radius: 50%;
+		background: var(--tag-color);
+		flex: 0 0 auto;
+	}
+
+	.tag-filter-button.active .tag-dot {
+		background: currentColor;
+	}
+
+	.search-input:focus-visible {
 		outline: none;
 		border-color: var(--link);
+		box-shadow: 0 0 0 3px rgba(79, 131, 255, 0.13);
+	}
+
+	.filter-reset {
+		height: 34px;
+		padding: 0 2px;
+		border: 0;
+		background: transparent;
+		color: var(--text-muted);
+		font-size: var(--font-xs);
+		font-weight: 600;
+		cursor: pointer;
+		transition:
+			transform var(--duration-press) var(--ease-out),
+			color var(--transition-fast);
+	}
+
+	@media (hover: hover) and (pointer: fine) {
+		.search-input:hover,
+		.tag-filter-button:hover {
+			border-color: rgba(15, 23, 42, 0.18);
+		}
+
+		.tag-filter-button:hover:not(.active) {
+			background: var(--bg-muted);
+			color: var(--text);
+		}
+
+		.filter-reset:hover {
+			color: var(--text);
+		}
 	}
 
 	.posts-count {
 		color: var(--text-muted);
 		margin-bottom: var(--spacing-md);
 		font-size: var(--font-xs);
-		letter-spacing: 0.01em;
 	}
 
 	.posts-grid {
@@ -193,14 +296,33 @@
 			padding: 0 var(--spacing-md);
 		}
 
-		.filters {
-			grid-template-columns: 1fr;
-			gap: var(--spacing-xs);
-			padding: var(--spacing-xs);
-		}
-
 		.posts-grid {
 			gap: var(--spacing-md);
+		}
+	}
+
+	@media (max-width: 760px) {
+		.filters {
+			grid-template-columns: 1fr;
+			gap: var(--spacing-md);
+		}
+	}
+
+	@media (max-width: 560px) {
+		.filters {
+			gap: 10px;
+		}
+
+		.tag-controls {
+			align-items: flex-start;
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.search-input,
+		.tag-filter-button,
+		.filter-reset {
+			transition: none;
 		}
 	}
 </style>

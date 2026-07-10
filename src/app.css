@@ -61,10 +61,16 @@
 	--font-4xl: 2.5rem;
 	--font-5xl: 3rem;
 	
-	/* 트랜지션 */
-	--transition-fast: 0.2s ease;
-	--transition-base: 0.3s ease;
-	--transition-slow: 0.5s ease;
+	/* 모션 */
+	--ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+	--ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+	--duration-press: 120ms;
+	--duration-fast: 160ms;
+	--duration-base: 220ms;
+	--duration-slow: 260ms;
+	--transition-fast: var(--duration-fast) var(--ease-out);
+	--transition-base: var(--duration-base) var(--ease-out);
+	--transition-slow: var(--duration-slow) var(--ease-in-out);
 	
 	/* 레이아웃 */
 	--container-max-width: 100vw;
@@ -98,6 +104,23 @@ body {
 	font-family: var(--font-sans);
 	background: var(--bg);
 	color: var(--text);
+}
+
+:where(a, button, input, select, textarea) {
+	-webkit-tap-highlight-color: transparent;
+}
+
+:where(a, button, input, select, textarea):focus-visible {
+	outline: 2px solid var(--link);
+	outline-offset: 3px;
+}
+
+button:not(:disabled) {
+	transition: transform var(--duration-press) var(--ease-out);
+}
+
+button:not(:disabled):active {
+	transform: scale(0.97);
 }
 
 main {
@@ -146,4 +169,44 @@ pre code {
 	background: none;
 	border-radius: 0;
 	font-size: 0.875rem;
+}
+
+::view-transition-old(root) {
+	animation: app-route-out var(--duration-fast) var(--ease-out) both;
+	transform-origin: top center;
+}
+
+::view-transition-new(root) {
+	animation: app-route-in var(--duration-base) var(--ease-out) both;
+	transform-origin: top center;
+}
+
+@keyframes app-route-out {
+	to {
+		opacity: 0;
+		transform: scale(0.992);
+	}
+}
+
+@keyframes app-route-in {
+	from {
+		opacity: 0;
+		transform: translateY(8px) scale(0.996);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0) scale(1);
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	button:not(:disabled):active {
+		transform: none;
+	}
+
+	::view-transition-old(root),
+	::view-transition-new(root) {
+		animation: none;
+		transform: none;
+	}
 }

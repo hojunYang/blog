@@ -23,15 +23,14 @@
 		border-radius: 8px;
 		padding: var(--spacing-lg);
 		border: 1px solid transparent;
-		transition: transform 0.16s ease, background 0.16s ease;
+		transition: transform var(--transition-fast);
 		display: flex;
 		flex-direction: column;
 		gap: var(--spacing-sm);
 	}
 
-	.post-card:hover {
-		transform: translateY(-2px) scale(1.01);
-		background: rgba(79, 131, 255, 0.04);
+	.post-card:active {
+		transform: scale(0.985);
 	}
 
 	.post-link {
@@ -68,11 +67,6 @@
 			border: 1px solid transparent;
 		}
 
-		.post-card:hover {
-			transform: translateY(-2px) scale(1.01);
-			box-shadow: var(--shadow-soft);
-		}
-
 		.post-link {
 			height: 100%;
 			display: flex;
@@ -98,5 +92,19 @@
 			overflow: hidden;
 		}
 
+	}
+
+	@media (hover: hover) and (pointer: fine) {
+		.post-card:hover {
+			transform: translateY(-2px);
+			background: rgba(79, 131, 255, 0.04);
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.post-card:active,
+		.post-card:hover {
+			transform: none;
+		}
 	}
 </style>
