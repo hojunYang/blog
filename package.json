@@ -29,6 +29,7 @@
 		"force-graph": "^1.51.1",
 		"gray-matter": "^4.0.3",
 		"highlight.js": "^11.11.1",
+		"katex": "^0.17.0",
 		"marked": "^17.0.1",
 		"marked-highlight": "^2.2.3",
 		"pg": "^8.18.0"

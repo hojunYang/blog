@@ -45,6 +45,32 @@ The project now supports deduplicated likes/views with Postgres.
 2. Run SQL in `sql/metrics.sql` on your Postgres instance.
 3. Start app with `npm run dev`.
 
+## Markdown table of contents
+
+Add `<!-- toc -->` to a Markdown post to render a linked table of contents at that position. The table of contents includes `##`, `###`, and `####` headings.
+
+```md
+<!-- toc -->
+
+## 첫 번째 섹션
+내용
+
+### 하위 섹션
+내용
+```
+
+## Markdown math
+
+Use `\(...\)` for inline math and `\[...\]` for display math. Dollar-sign math syntax is not enabled.
+
+```md
+문장 안에서는 \( \sigma_p^2 \) 처럼 작성한다.
+
+\[
+\sigma_p^2 = w^2\sigma_1^2 + (1-w)^2\sigma_2^2 + 2w(1-w)\sigma_1\sigma_2\rho_{12}
+\]
+```
+
 ## Secret posts
 
 Markdown posts live under `src/lib/server/content/posts`, so post source files are not served as static assets.

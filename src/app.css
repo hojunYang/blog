@@ -71,7 +71,9 @@
 	--post-max-width: 80vw;
 	
 	/* 폰트 패밀리 */
-	--font-mono: 'Fira Code', 'Noto Sans KR', sans-serif;
+	--font-sans: 'Pretendard Variable', 'Pretendard', 'Noto Sans KR', sans-serif;
+	--font-brand: 'CPCompany', 'CPCompanyBold', var(--font-sans);
+	--font-mono: 'Fira Code', var(--font-sans);
 }
 
 /* 전역 리셋 */
@@ -93,7 +95,7 @@ optgroup {
 body {
 	margin: 0;
 	padding: 0;
-	font-family: var(--font-mono);
+	font-family: var(--font-sans);
 	background: var(--bg);
 	color: var(--text);
 }

@@ -136,7 +136,7 @@
 		background: var(--control-bg, transparent);
 		color: var(--text);
 		font-size: var(--font-sm);
-		font-family: var(--font-mono);
+		font-family: inherit;
 		transition: border-color var(--transition-fast), opacity var(--transition-fast);
 	}
 

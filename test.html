@@ -1,0 +1,366 @@
+<!doctype html>
+<html lang="ko">
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<title>Font Test</title>
+	<style>
+		@font-face {
+			font-family: 'Fira Code';
+			src:
+				url('./src/lib/assets/woff2/FiraCode-Regular.woff2') format('woff2'),
+				url('./src/lib/assets/woff/FiraCode-Regular.woff') format('woff');
+			font-weight: 400;
+			font-style: normal;
+			font-display: swap;
+		}
+
+		@font-face {
+			font-family: 'Fira Code';
+			src:
+				url('./src/lib/assets/woff2/FiraCode-Bold.woff2') format('woff2'),
+				url('./src/lib/assets/woff/FiraCode-Bold.woff') format('woff');
+			font-weight: 700;
+			font-style: normal;
+			font-display: swap;
+		}
+
+		@font-face {
+			font-family: 'Pretendard Variable';
+			src: url('./src/lib/assets/fonts/pretendard/variable/woff2/PretendardVariable.woff2') format('woff2-variations');
+			font-weight: 45 920;
+			font-style: normal;
+			font-display: swap;
+		}
+
+		@font-face {
+			font-family: 'CPCompany';
+			src: url('./src/lib/assets/fonts/cpcompany/CPCompany-Bold.woff') format('woff');
+			font-weight: 700;
+			font-style: normal;
+			font-display: swap;
+		}
+
+		:root {
+			--bg: #f6f7f9;
+			--panel: #ffffff;
+			--text: #202632;
+			--muted: #687386;
+			--line: #dce1e8;
+			--accent: #2f6fed;
+			--shadow: 0 14px 34px rgba(29, 35, 45, 0.08);
+		}
+
+		* {
+			box-sizing: border-box;
+		}
+
+		body {
+			margin: 0;
+			background: var(--bg);
+			color: var(--text);
+			font-family: 'Pretendard Variable', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+			line-height: 1.6;
+		}
+
+		main {
+			width: min(1180px, calc(100% - 32px));
+			margin: 0 auto;
+			padding: 36px 0 56px;
+		}
+
+		header {
+			margin-bottom: 28px;
+		}
+
+		h1 {
+			margin: 0 0 8px;
+			font-size: 32px;
+			line-height: 1.2;
+			letter-spacing: 0;
+		}
+
+		.lead {
+			max-width: 760px;
+			margin: 0;
+			color: var(--muted);
+			font-size: 15px;
+		}
+
+		.grid {
+			display: grid;
+			grid-template-columns: repeat(3, minmax(0, 1fr));
+			gap: 16px;
+			margin-bottom: 28px;
+		}
+
+		.card,
+		.compare-row,
+		.specimen {
+			background: var(--panel);
+			border: 1px solid var(--line);
+			border-radius: 8px;
+			box-shadow: var(--shadow);
+		}
+
+		.card {
+			padding: 18px;
+		}
+
+		.card h2 {
+			margin: 0 0 6px;
+			font-size: 18px;
+			line-height: 1.25;
+		}
+
+		.card p {
+			margin: 0;
+			color: var(--muted);
+			font-size: 13px;
+		}
+
+		.fira {
+			font-family: 'Fira Code', 'Pretendard Variable', monospace;
+		}
+
+		.pretendard {
+			font-family: 'Pretendard Variable', 'Pretendard', system-ui, sans-serif;
+		}
+
+		.cpcompany {
+			font-family: 'CPCompany', 'Pretendard Variable', sans-serif;
+			font-weight: 700;
+		}
+
+		.specimen {
+			margin-top: 16px;
+			overflow: hidden;
+		}
+
+		.specimen-head {
+			display: flex;
+			justify-content: space-between;
+			gap: 16px;
+			padding: 14px 18px;
+			border-bottom: 1px solid var(--line);
+			background: #fbfcfe;
+		}
+
+		.specimen-title {
+			margin: 0;
+			font-size: 15px;
+			font-weight: 700;
+		}
+
+		.specimen-meta {
+			margin: 0;
+			color: var(--muted);
+			font-size: 12px;
+			text-align: right;
+		}
+
+		.specimen-body {
+			padding: 18px;
+		}
+
+		.sample-large {
+			margin: 0 0 14px;
+			font-size: 42px;
+			line-height: 1.16;
+			letter-spacing: 0;
+		}
+
+		.sample-body {
+			margin: 0 0 14px;
+			font-size: 18px;
+		}
+
+		.sample-small {
+			margin: 0;
+			color: var(--muted);
+			font-size: 13px;
+		}
+
+		.compare {
+			display: flex;
+			flex-direction: column;
+			gap: 10px;
+			margin-top: 18px;
+		}
+
+		.compare-row {
+			display: grid;
+			grid-template-columns: 160px minmax(0, 1fr);
+			align-items: center;
+			min-height: 70px;
+			padding: 12px 16px;
+		}
+
+		.label {
+			color: var(--muted);
+			font-size: 13px;
+		}
+
+		.text {
+			font-size: 24px;
+			line-height: 1.35;
+			word-break: keep-all;
+		}
+
+		.weights {
+			display: grid;
+			grid-template-columns: repeat(5, minmax(0, 1fr));
+			gap: 10px;
+			margin-top: 18px;
+		}
+
+		.weight {
+			padding: 12px;
+			border: 1px solid var(--line);
+			border-radius: 8px;
+			background: var(--panel);
+		}
+
+		.weight span {
+			display: block;
+			color: var(--muted);
+			font-size: 12px;
+			margin-bottom: 6px;
+		}
+
+		.weight strong {
+			display: block;
+			font-size: 28px;
+			line-height: 1.2;
+		}
+
+		code {
+			display: block;
+			padding: 14px;
+			border-radius: 8px;
+			background: #1f2530;
+			color: #eef3ff;
+			font-family: 'Fira Code', monospace;
+			font-size: 14px;
+			line-height: 1.65;
+			overflow-x: auto;
+			white-space: pre;
+		}
+
+		@media (max-width: 860px) {
+			.grid,
+			.weights {
+				grid-template-columns: 1fr;
+			}
+
+			.compare-row {
+				grid-template-columns: 1fr;
+				gap: 6px;
+			}
+
+			.sample-large {
+				font-size: 32px;
+			}
+
+			.text {
+				font-size: 20px;
+			}
+		}
+	</style>
+</head>
+<body>
+	<main>
+		<header>
+			<h1>Font Test</h1>
+			<p class="lead">
+				현재 블로그에 적재된 Fira Code, Pretendard Variable, CPCompany를 같은 문장으로 비교합니다.
+				한글의 자폭, 영문의 리듬, 숫자 정렬, 코드 가독성, 굵기 변화를 눈으로 확인하기 위한 페이지입니다.
+			</p>
+		</header>
+
+		<section class="grid" aria-label="Font summary">
+			<article class="card fira">
+				<h2>Fira Code</h2>
+				<p>고정폭 코딩 폰트. 영문, 숫자, 기호, ligature에 강하고 한글은 fallback에 의존합니다.</p>
+			</article>
+			<article class="card pretendard">
+				<h2>Pretendard Variable</h2>
+				<p>본문용 산세리프. 한글/영문 혼용 문장에서 균형이 좋고 variable weight를 지원합니다.</p>
+			</article>
+			<article class="card cpcompany">
+				<h2>CPCompany</h2>
+				<p>굵은 표시용 폰트. 제목, 로고, 짧은 강조 문구에 쓰기 좋은 인상입니다.</p>
+			</article>
+		</section>
+
+		<section class="specimen">
+			<div class="specimen-head">
+				<p class="specimen-title">큰 제목 샘플</p>
+				<p class="specimen-meta">같은 크기, 같은 문장</p>
+			</div>
+			<div class="specimen-body">
+				<p class="sample-large fira">Hojun Yang Blog / 기록하는 개발자</p>
+				<p class="sample-large pretendard">Hojun Yang Blog / 기록하는 개발자</p>
+				<p class="sample-large cpcompany">Hojun Yang Blog / 기록하는 개발자</p>
+			</div>
+		</section>
+
+		<section class="specimen">
+			<div class="specimen-head">
+				<p class="specimen-title">본문 샘플</p>
+				<p class="specimen-meta">한글, 영문, 숫자, 기호</p>
+			</div>
+			<div class="specimen-body">
+				<p class="sample-body fira">오늘은 SvelteKit 블로그의 폰트 스택을 정리했다. 2026-07-09, CPU 42%, latency 128ms.</p>
+				<p class="sample-body pretendard">오늘은 SvelteKit 블로그의 폰트 스택을 정리했다. 2026-07-09, CPU 42%, latency 128ms.</p>
+				<p class="sample-body cpcompany">오늘은 SvelteKit 블로그의 폰트 스택을 정리했다. 2026-07-09, CPU 42%, latency 128ms.</p>
+				<p class="sample-small">비교 포인트: 한글 자간, 영문 x-height, 숫자 폭, 쉼표와 마침표의 무게감.</p>
+			</div>
+		</section>
+
+		<section class="compare" aria-label="Side by side font comparison">
+			<div class="compare-row">
+				<div class="label">Fira Code</div>
+				<div class="text fira">const blog = "기록과 실험"; 0123456789 =&gt; === !==</div>
+			</div>
+			<div class="compare-row">
+				<div class="label">Pretendard Variable</div>
+				<div class="text pretendard">const blog = "기록과 실험"; 0123456789 =&gt; === !==</div>
+			</div>
+			<div class="compare-row">
+				<div class="label">CPCompany</div>
+				<div class="text cpcompany">const blog = "기록과 실험"; 0123456789 =&gt; === !==</div>
+			</div>
+		</section>
+
+		<section class="specimen">
+			<div class="specimen-head">
+				<p class="specimen-title">Pretendard Variable weight</p>
+				<p class="specimen-meta">100, 300, 500, 700, 900</p>
+			</div>
+			<div class="specimen-body">
+				<div class="weights pretendard">
+					<div class="weight"><span>100</span><strong style="font-weight: 100;">가나다 ABC</strong></div>
+					<div class="weight"><span>300</span><strong style="font-weight: 300;">가나다 ABC</strong></div>
+					<div class="weight"><span>500</span><strong style="font-weight: 500;">가나다 ABC</strong></div>
+					<div class="weight"><span>700</span><strong style="font-weight: 700;">가나다 ABC</strong></div>
+					<div class="weight"><span>900</span><strong style="font-weight: 900;">가나다 ABC</strong></div>
+				</div>
+			</div>
+		</section>
+
+		<section class="specimen">
+			<div class="specimen-head">
+				<p class="specimen-title">Code block</p>
+				<p class="specimen-meta">Fira Code</p>
+			</div>
+			<div class="specimen-body">
+				<code>function renderPost(title, views) {
+  const message = `${title} · ${views.toLocaleString()} views`;
+  return message.includes("기록") ? message : "draft";
+}</code>
+			</div>
+		</section>
+	</main>
+</body>
+</html>

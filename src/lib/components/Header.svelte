@@ -32,7 +32,7 @@
 	<nav>
 		<div class="container">
 			<a href="/" class="logo">
-				<span class="logo-text">Hojun Yang</span>
+				<span class="logo-text">Hojun Yang Blog</span>
 			</a>
 			<div class="nav-links">
 				<a href="/post" class:active={currentPath === '/post'}>포스트</a>
@@ -76,7 +76,6 @@ nav {
 		text-decoration: none;
 		color: var(--text);
 		font-size: var(--font-2xl);
-		font-weight: 700;
 		transition: transform var(--transition-fast);
 	}
 
@@ -90,6 +89,7 @@ nav {
 	} */
 
 	.logo-text {
+		font-family: var(--font-mono);
 		font-size: var(--font-2xl);
 	}
 

@@ -1,9 +1,11 @@
 import { timingSafeEqual } from 'node:crypto';
 import matter from 'gray-matter';
-import { marked, Renderer } from 'marked';
+import { Marked, Renderer } from 'marked';
 import { markedHighlight } from 'marked-highlight';
 import hljs from 'highlight.js';
+import katex from 'katex';
 import type { BlogPost, GraphData, GraphLink, GraphNode, GraphStats } from '$lib/types';
+import type { MarkedExtension, Token, TokenizerAndRendererExtension, Tokens } from 'marked';
 
 const postFiles = import.meta.glob('./content/posts/*.md', {
 	query: '?raw',
@@ -11,28 +13,15 @@ const postFiles = import.meta.glob('./content/posts/*.md', {
 	eager: true
 }) as Record<string, string>;
 
-marked.setOptions({
+const MARKED_OPTIONS = {
 	breaks: true,
 	gfm: true
-});
+} as const;
 
-const renderer = new Renderer();
-renderer.image = ({ href, title, text }) => {
-	const titleAttr = title ? ` title="${title}"` : '';
-	return `<img src="${href}" alt="${text}"${titleAttr} style="max-width: 100%; height: auto; display: block; margin: 1rem auto;">`;
-};
-
-marked.use({ renderer });
-
-marked.use(
-	markedHighlight({
-		langPrefix: 'hljs language-',
-		highlight(code, lang) {
-			const language = hljs.getLanguage(lang) ? lang : 'plaintext';
-			return hljs.highlight(code, { language }).value;
-		}
-	})
-);
+const TOC_MARKER_PATTERN = /<!--\s*toc\s*-->/gi;
+const HAS_TOC_MARKER_PATTERN = /<!--\s*toc\s*-->/i;
+const MIN_TOC_DEPTH = 2;
+const MAX_TOC_DEPTH = 4;
 
 type ParsedPost = {
 	id: string;
@@ -51,6 +40,17 @@ type ParsedPost = {
 type WikiLink = {
 	targetId: string;
 	alias?: string;
+};
+
+type TocItem = {
+	id: string;
+	text: string;
+	depth: number;
+};
+
+type MathToken = Tokens.Generic & {
+	text: string;
+	displayMode: boolean;
 };
 
 const WIKI_LINK_PATTERN = /\[\[([^[\]]+?)\]\]/g;
@@ -109,6 +109,86 @@ function escapeMarkdownLinkText(text: string): string {
 	return text.replace(/\\/g, '\\\\').replace(/\]/g, '\\]');
 }
 
+function escapeHtml(value: string): string {
+	return value
+		.replace(/&/g, '&amp;')
+		.replace(/</g, '&lt;')
+		.replace(/>/g, '&gt;')
+		.replace(/"/g, '&quot;')
+		.replace(/'/g, '&#39;');
+}
+
+function renderMathExpression(expression: string, displayMode: boolean): string {
+	try {
+		return katex.renderToString(expression, {
+			displayMode,
+			throwOnError: false,
+			output: 'htmlAndMathml'
+		});
+	} catch {
+		const escapedExpression = escapeHtml(expression);
+		return displayMode
+			? `<pre class="math-fallback">\\[${escapedExpression}\\]</pre>`
+			: `<code class="math-fallback">\\(${escapedExpression}\\)</code>`;
+	}
+}
+
+function createMathToken(type: 'mathInline' | 'mathBlock', raw: string, displayMode: boolean): MathToken {
+	return {
+		type,
+		raw,
+		text: raw.slice(2, -2).trim(),
+		displayMode
+	};
+}
+
+const mathBlockExtension: TokenizerAndRendererExtension = {
+	name: 'mathBlock',
+	level: 'block',
+	start(src) {
+		return src.indexOf('\\[');
+	},
+	tokenizer(src) {
+		if (!src.startsWith('\\[')) return;
+
+		const endIndex = src.indexOf('\\]', 2);
+		if (endIndex === -1) return;
+
+		return createMathToken('mathBlock', src.slice(0, endIndex + 2), true);
+	},
+	renderer(token) {
+		const mathToken = token as MathToken;
+		return renderMathExpression(mathToken.text, mathToken.displayMode);
+	}
+};
+
+const mathInlineExtension: TokenizerAndRendererExtension = {
+	name: 'mathInline',
+	level: 'inline',
+	start(src) {
+		return src.indexOf('\\(');
+	},
+	tokenizer(src) {
+		if (!src.startsWith('\\(')) return;
+
+		const endIndex = src.indexOf('\\)', 2);
+		if (endIndex === -1) return;
+
+		const newlineIndex = src.indexOf('\n');
+		if (newlineIndex !== -1 && newlineIndex < endIndex) return;
+
+		return createMathToken('mathInline', src.slice(0, endIndex + 2), false);
+	},
+	renderer(token) {
+		const mathToken = token as MathToken;
+		return renderMathExpression(mathToken.text, mathToken.displayMode);
+	}
+};
+
+const mathExtension: MarkedExtension = {
+	extensions: [mathBlockExtension, mathInlineExtension]
+};
+
 function convertWikiLinksToMarkdown(content: string, validPostIds: Set<string>): string {
 	const regex = new RegExp(WIKI_LINK_PATTERN);
 	return content.replace(regex, (_full, rawToken: string) => {
@@ -125,6 +205,149 @@ function convertWikiLinksToMarkdown(content: string, validPostIds: Set<string>):
 		const href = `/post/${encodeURIComponent(parsed.targetId)}`;
 		return `[${escapeMarkdownLinkText(plainText)}](${href})`;
 	});
+}
+
+function isTocHeading(token: Token): token is Tokens.Heading {
+	return token.type === 'heading' && token.depth >= MIN_TOC_DEPTH && token.depth <= MAX_TOC_DEPTH;
+}
+
+function getInlineTokenText(token: Token): string {
+	if ('tokens' in token && Array.isArray(token.tokens) && token.tokens.length > 0) {
+		return token.tokens.map(getInlineTokenText).join('');
+	}
+	if ('text' in token && typeof token.text === 'string') {
+		return token.text;
+	}
+	return '';
+}
+
+function getHeadingText(heading: Tokens.Heading): string {
+	const tokenText = heading.tokens.map(getInlineTokenText).join('').trim();
+	return tokenText || heading.text.trim();
+}
+
+function slugifyHeading(text: string): string {
+	const slug = text
+		.trim()
+		.toLowerCase()
+		.replace(/[^\p{L}\p{N}\s-]/gu, '')
+		.replace(/\s+/g, '-')
+		.replace(/-+/g, '-')
+		.replace(/^-|-$/g, '');
+
+	return slug || 'section';
+}
+
+function getUniqueSlug(baseSlug: string, slugCounts: Map<string, number>): string {
+	const currentCount = slugCounts.get(baseSlug) ?? 0;
+	slugCounts.set(baseSlug, currentCount + 1);
+	return currentCount === 0 ? baseSlug : `${baseSlug}-${currentCount + 1}`;
+}
+
+function collectTocItems(markdown: string): TocItem[] {
+	const markdownParser = new Marked(MARKED_OPTIONS);
+	const slugCounts = new Map<string, number>();
+	const tocItems: TocItem[] = [];
+	const tokens = markdownParser.lexer(markdown);
+
+	markdownParser.walkTokens(tokens, (token) => {
+		if (!isTocHeading(token)) return;
+
+		const text = getHeadingText(token);
+		const id = getUniqueSlug(slugifyHeading(text), slugCounts);
+		tocItems.push({
+			id,
+			text,
+			depth: token.depth
+		});
+	});
+
+	return tocItems;
+}
+
+function buildTocHtml(tocItems: TocItem[]): string {
+	if (tocItems.length === 0) {
+		return '';
+	}
+
+	const links = tocItems
+		.map(
+			(item) =>
+				`<li class="post-toc-item depth-${item.depth}"><a href="#${escapeHtml(item.id)}">${escapeHtml(item.text)}</a></li>`
+		)
+		.join('\n');
+
+	return `<nav class="post-toc" aria-label="목차">
+<strong class="post-toc-title">목차</strong>
+<ul>
+${links}
+</ul>
+</nav>`;
+}
+
+function replaceTocMarkers(markdown: string, tocHtml: string): string {
+	let replacedFirstMarker = false;
+	return markdown.replace(TOC_MARKER_PATTERN, () => {
+		if (replacedFirstMarker) {
+			return '';
+		}
+
+		replacedFirstMarker = true;
+		return tocHtml;
+	});
+}
+
+function createMarkdownParser(tocItems: TocItem[] | null): Marked {
+	const renderer = new Renderer();
+	const headingIds = tocItems?.map((item) => item.id) ?? [];
+	let headingIndex = 0;
+
+	renderer.image = ({ href, title, text }) => {
+		const titleAttr = title ? ` title="${title}"` : '';
+		return `<img src="${href}" alt="${text}"${titleAttr} style="max-width: 100%; height: auto; display: block; margin: 1rem auto;">`;
+	};
+
+	if (tocItems) {
+		renderer.heading = function ({ tokens, depth }) {
+			const headingHtml = this.parser.parseInline(tokens);
+			if (depth < MIN_TOC_DEPTH || depth > MAX_TOC_DEPTH) {
+				return `<h${depth}>${headingHtml}</h${depth}>\n`;
+			}
+
+			const id = headingIds[headingIndex];
+			headingIndex += 1;
+			if (!id) {
+				return `<h${depth}>${headingHtml}</h${depth}>\n`;
+			}
+
+			return `<h${depth} id="${escapeHtml(id)}">${headingHtml}</h${depth}>\n`;
+		};
+	}
+
+	return new Marked(
+		MARKED_OPTIONS,
+		{ renderer },
+		mathExtension,
+		markedHighlight({
+			langPrefix: 'hljs language-',
+			highlight(code, lang) {
+				const language = hljs.getLanguage(lang) ? lang : 'plaintext';
+				return hljs.highlight(code, { language }).value;
+			}
+		})
+	);
+}
+
+function prepareMarkdownForRendering(markdown: string): { markdown: string; tocItems: TocItem[] | null } {
+	if (!HAS_TOC_MARKER_PATTERN.test(markdown)) {
+		return { markdown, tocItems: null };
+	}
+
+	const tocItems = collectTocItems(markdown);
+	return {
+		markdown: replaceTocMarkers(markdown, buildTocHtml(tocItems)),
+		tocItems
+	};
 }
 
 function getFileName(path: string): string {
@@ -205,7 +428,8 @@ function isSameSecret(expected: string, actual: string): boolean {
 
 async function renderPost(post: ParsedPost, allPosts: ParsedPost[]): Promise<BlogPost> {
 	const normalizedMarkdown = convertWikiLinksToMarkdown(post.content, getValidLinkIds(post, allPosts));
-	const htmlContent = await marked(normalizedMarkdown);
+	const preparedMarkdown = prepareMarkdownForRendering(normalizedMarkdown);
+	const htmlContent = await createMarkdownParser(preparedMarkdown.tocItems).parse(preparedMarkdown.markdown);
 
 	return {
 		...toMetadata(post),
