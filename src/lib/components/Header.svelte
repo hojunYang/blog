@@ -35,7 +35,7 @@
 				<span class="logo-text">Hojun Yang Blog</span>
 			</a>
 			<div class="nav-links">
-				<a href="/post" class:active={currentPath === '/post'}>포스트</a>
+				<a href="/post" class:active={currentPath === '/post'}>Post</a>
 			</div>
 		</div>
 	</nav>
@@ -103,8 +103,9 @@ nav {
 	.nav-links a {
 		color: var(--text);
 		text-decoration: none;
+		font-family: var(--font-mono);
 		font-size: var(--font-lg);
-		font-weight: 600;
+		font-weight: 400;
 		border-radius: var(--radius-md);
 		transition:
 			transform var(--transition-fast),

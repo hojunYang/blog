@@ -53,12 +53,12 @@
 <div class="post-page">
 	<div class="filters" role="search" aria-label="포스트 필터">
 		<div class="filter-field filter-field-search">
-			<label for="post-search" class="filter-label">포스트 검색</label>
+			<label for="post-search" class="filter-label">검색</label>
 			<input
 				id="post-search"
 				type="text"
 				placeholder="제목과 내용을 검색하세요"
-				aria-label="포스트 검색"
+				aria-label="검색"
 				bind:value={searchQuery}
 				class="search-input"
 			/>
@@ -126,8 +126,8 @@
 
 	.filters {
 		display: grid;
-		grid-template-columns: minmax(0, 1fr) auto;
-		gap: var(--spacing-xl);
+		grid-template-columns: 1fr;
+		gap: var(--spacing-md);
 		align-items: end;
 		border-bottom: 1px solid var(--stroke);
 		padding-bottom: var(--spacing-lg);
@@ -297,13 +297,6 @@
 		}
 
 		.posts-grid {
-			gap: var(--spacing-md);
-		}
-	}
-
-	@media (max-width: 760px) {
-		.filters {
-			grid-template-columns: 1fr;
 			gap: var(--spacing-md);
 		}
 	}
