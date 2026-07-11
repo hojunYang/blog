@@ -11,9 +11,8 @@
 	const posts = $derived(data.posts);
 
 	let searchQuery = $state('');
-	let selectedTag = $state('');
+	let selectedTags = $state<string[]>([]);
 	const normalizedQuery = $derived(searchQuery.trim().toLowerCase());
-	const hasActiveFilters = $derived(normalizedQuery !== '' || selectedTag !== '');
 
 	const allTags = $derived(() => {
 		const tags = new Set<string>();
@@ -30,19 +29,21 @@
 				post.title.toLowerCase().includes(normalizedQuery) ||
 				post.excerpt.toLowerCase().includes(normalizedQuery);
 
-			const matchesTag = selectedTag === '' || post.tags.includes(selectedTag);
+			const matchesTag =
+				selectedTags.length === 0 || selectedTags.some((tag) => post.tags.includes(tag));
 
 			return matchesSearch && matchesTag;
 		});
 	});
 
-	function resetFilters(): void {
-		searchQuery = '';
-		selectedTag = '';
+	function clearSelectedTags(): void {
+		selectedTags = [];
 	}
 
-	function selectTag(tag: string): void {
-		selectedTag = tag;
+	function toggleTag(tag: string): void {
+		selectedTags = selectedTags.includes(tag)
+			? selectedTags.filter((selectedTag) => selectedTag !== tag)
+			: [...selectedTags, tag];
 	}
 </script>
 
@@ -71,9 +72,9 @@
 					<button
 						type="button"
 						class="tag-filter-button"
-						class:active={selectedTag === ''}
-						aria-pressed={selectedTag === ''}
-						onclick={() => selectTag('')}
+						class:active={selectedTags.length === 0}
+						aria-pressed={selectedTags.length === 0}
+						onclick={clearSelectedTags}
 					>
 						전체
 					</button>
@@ -82,20 +83,16 @@
 						<button
 							type="button"
 							class="tag-filter-button"
-							class:active={selectedTag === tag}
-							aria-pressed={selectedTag === tag}
+							class:active={selectedTags.includes(tag)}
+							aria-pressed={selectedTags.includes(tag)}
 							style={`--tag-color: ${getTagColor(tag)}`}
-							onclick={() => selectTag(tag)}
+							onclick={() => toggleTag(tag)}
 						>
 							<span class="tag-dot" aria-hidden="true"></span>
 							{tag}
 						</button>
 					{/each}
 				</div>
-
-				{#if hasActiveFilters}
-					<button type="button" class="filter-reset" onclick={resetFilters}>초기화</button>
-				{/if}
 			</div>
 		</div>
 	</div>
@@ -243,20 +240,6 @@
 		box-shadow: 0 0 0 3px rgba(79, 131, 255, 0.13);
 	}
 
-	.filter-reset {
-		height: 34px;
-		padding: 0 2px;
-		border: 0;
-		background: transparent;
-		color: var(--text-muted);
-		font-size: var(--font-xs);
-		font-weight: 600;
-		cursor: pointer;
-		transition:
-			transform var(--duration-press) var(--ease-out),
-			color var(--transition-fast);
-	}
-
 	@media (hover: hover) and (pointer: fine) {
 		.search-input:hover,
 		.tag-filter-button:hover {
@@ -265,10 +248,6 @@
 
 		.tag-filter-button:hover:not(.active) {
 			background: var(--bg-muted);
-			color: var(--text);
-		}
-
-		.filter-reset:hover {
 			color: var(--text);
 		}
 	}
@@ -313,8 +292,7 @@
 
 	@media (prefers-reduced-motion: reduce) {
 		.search-input,
-		.tag-filter-button,
-		.filter-reset {
+		.tag-filter-button {
 			transition: none;
 		}
 	}

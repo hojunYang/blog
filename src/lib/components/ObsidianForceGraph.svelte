@@ -209,11 +209,7 @@
 			instance = ForceGraphFactory()(containerEl)
 			.backgroundColor('rgba(0,0,0,0)')
 			.nodeId('id')
-			.nodeLabel((node: ForceNode) => {
-				const tagLine = node.tags.length > 0 ? node.tags.join(', ') : '없음';
-				const primaryTagLine = node.primaryTag ?? '태그 없음';
-				return `${node.label}\n대표 태그: ${primaryTagLine}\n전체 태그: ${tagLine}`;
-			})
+			.nodeLabel((node: ForceNode) => node.label)
 			.nodeCanvasObject((node: ForceNode, ctx: CanvasRenderingContext2D) => {
 				const opacity = getNodeOpacity(node);
 
@@ -335,6 +331,10 @@
 	.force-graph-root {
 		width: 100%;
 		height: 100%;
+	}
+
+	:global(.force-graph .float-tooltip-kap) {
+		font-size: var(--font-sm);
 	}
 
 	.graph-legend {
