@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { afterNavigate, onNavigate } from '$app/navigation';
+	import { page } from '$app/state';
 	import '../app.css';
 	import '$lib/assets/fira_code.css';
 	import '$lib/assets/fonts.css';
@@ -11,6 +12,7 @@
 
 	let { children } = $props();
 	let isFallbackNavigating = $state(false);
+	let isScoreRoute = $derived(page.url.pathname.startsWith('/score'));
 
 	onNavigate((navigation) => {
 		if (
@@ -50,8 +52,10 @@
 </svelte:head>
 
 <div class="app" class:route-transitioning={isFallbackNavigating}>
-	<Header />
-	<main>
+	{#if !isScoreRoute}
+		<Header />
+	{/if}
+	<main class:score-main={isScoreRoute}>
 		{@render children()}
 	</main>
 	<!-- <Footer /> -->
@@ -83,6 +87,11 @@
 		max-width: var(--container-max-width);
 		margin: 0 auto;
 		padding: var(--spacing-xl);
+	}
+
+	main.score-main {
+		max-width: none;
+		padding: 0;
 	}
 
 	@media (max-width: 1200px) {

@@ -33,14 +33,6 @@
 			font-display: swap;
 		}
 
-		@font-face {
-			font-family: 'CPCompany';
-			src: url('./src/lib/assets/fonts/cpcompany/CPCompany-Bold.woff') format('woff');
-			font-weight: 700;
-			font-style: normal;
-			font-display: swap;
-		}
-
 		:root {
 			--bg: #f6f7f9;
 			--panel: #ffffff;
@@ -125,11 +117,6 @@
 
 		.pretendard {
 			font-family: 'Pretendard Variable', 'Pretendard', system-ui, sans-serif;
-		}
-
-		.cpcompany {
-			font-family: 'CPCompany', 'Pretendard Variable', sans-serif;
-			font-weight: 700;
 		}
 
 		.specimen {
@@ -273,7 +260,7 @@
 		<header>
 			<h1>Font Test</h1>
 			<p class="lead">
-				현재 블로그에 적재된 Fira Code, Pretendard Variable, CPCompany를 같은 문장으로 비교합니다.
+				현재 블로그에 적재된 Fira Code와 Pretendard Variable을 같은 문장으로 비교합니다.
 				한글의 자폭, 영문의 리듬, 숫자 정렬, 코드 가독성, 굵기 변화를 눈으로 확인하기 위한 페이지입니다.
 			</p>
 		</header>
@@ -287,10 +274,6 @@
 				<h2>Pretendard Variable</h2>
 				<p>본문용 산세리프. 한글/영문 혼용 문장에서 균형이 좋고 variable weight를 지원합니다.</p>
 			</article>
-			<article class="card cpcompany">
-				<h2>CPCompany</h2>
-				<p>굵은 표시용 폰트. 제목, 로고, 짧은 강조 문구에 쓰기 좋은 인상입니다.</p>
-			</article>
 		</section>
 
 		<section class="specimen">
@@ -301,7 +284,6 @@
 			<div class="specimen-body">
 				<p class="sample-large fira">Hojun Yang Blog / 기록하는 개발자</p>
 				<p class="sample-large pretendard">Hojun Yang Blog / 기록하는 개발자</p>
-				<p class="sample-large cpcompany">Hojun Yang Blog / 기록하는 개발자</p>
 			</div>
 		</section>
 
@@ -313,7 +295,6 @@
 			<div class="specimen-body">
 				<p class="sample-body fira">오늘은 SvelteKit 블로그의 폰트 스택을 정리했다. 2026-07-09, CPU 42%, latency 128ms.</p>
 				<p class="sample-body pretendard">오늘은 SvelteKit 블로그의 폰트 스택을 정리했다. 2026-07-09, CPU 42%, latency 128ms.</p>
-				<p class="sample-body cpcompany">오늘은 SvelteKit 블로그의 폰트 스택을 정리했다. 2026-07-09, CPU 42%, latency 128ms.</p>
 				<p class="sample-small">비교 포인트: 한글 자간, 영문 x-height, 숫자 폭, 쉼표와 마침표의 무게감.</p>
 			</div>
 		</section>
@@ -326,10 +307,6 @@
 			<div class="compare-row">
 				<div class="label">Pretendard Variable</div>
 				<div class="text pretendard">const blog = "기록과 실험"; 0123456789 =&gt; === !==</div>
-			</div>
-			<div class="compare-row">
-				<div class="label">CPCompany</div>
-				<div class="text cpcompany">const blog = "기록과 실험"; 0123456789 =&gt; === !==</div>
 			</div>
 		</section>
 

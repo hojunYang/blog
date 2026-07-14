@@ -78,7 +78,7 @@
 	
 	/* 폰트 패밀리 */
 	--font-sans: 'Pretendard Variable', 'Pretendard', 'Noto Sans KR', sans-serif;
-	--font-brand: 'CPCompany', 'CPCompanyBold', var(--font-sans);
+	--font-brand: 'Fira Code', var(--font-sans);
 	--font-mono: 'Fira Code', var(--font-sans);
 }
 
