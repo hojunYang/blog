@@ -15,8 +15,9 @@
 			} catch { /* Keep the last displayed score if a refresh fails. */ }
 		};
 		refresh();
-		const timer = window.setInterval(refresh, 3000);
-		return () => window.clearInterval(timer);
+		const events = new EventSource('/score/events');
+		events.addEventListener('scores', refresh);
+		return () => events.close();
 	});
 </script>
 
