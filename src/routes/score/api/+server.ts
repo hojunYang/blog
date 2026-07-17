@@ -1,6 +1,6 @@
 import { error, json, type RequestHandler } from '@sveltejs/kit';
 import { ensureSameOrigin } from '$lib/server/metrics';
-import { changeScore, getScores, renameTeam, resetScores } from '../scoreboard.server';
+import { changeScore, getScores, renameTeam, resetScores, setScore } from '../scoreboard.server';
 
 export const GET: RequestHandler = async () => {
 	try {
@@ -16,6 +16,7 @@ export const POST: RequestHandler = async (event) => {
 		const body = await event.request.json();
 		if (body?.action === 'reset') return json(await resetScores());
 		if (body?.action === 'change') return json(await changeScore(body.teamId, body.amount));
+		if (body?.action === 'set') return json(await setScore(body.teamId, body.score));
 		if (body?.action === 'rename') return json(await renameTeam(body.teamId, body.name));
 		throw error(400, '잘못된 요청입니다.');
 	} catch (cause) {

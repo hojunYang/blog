@@ -64,6 +64,18 @@ export async function changeScore(teamId: string, amount: number): Promise<Score
 	return getScores();
 }
 
+export async function setScore(teamId: string, score: unknown): Promise<Scoreboard> {
+	if (!isTeamId(teamId) || typeof score !== 'number' || !Number.isSafeInteger(score)) {
+		throw new Error('Invalid score');
+	}
+	await ensureScoreboard();
+	await withClient(async (client) => {
+		await client.query('UPDATE scoreboard_scores SET score = $2, updated_at = NOW() WHERE team_id = $1', [teamId, score]);
+		await notifyScoreChange(client, 'score');
+	});
+	return getScores();
+}
+
 export async function renameTeam(teamId: string, name: unknown): Promise<Scoreboard> {
 	if (!isTeamId(teamId) || typeof name !== 'string') throw new Error('Invalid team name');
 	const trimmedName = name.trim();
