@@ -302,6 +302,10 @@ function createMarkdownParser(tocItems: TocItem[] | null): Marked {
 	const headingIds = tocItems?.map((item) => item.id) ?? [];
 	let headingIndex = 0;
 
+	// Marked normally discards blank-line tokens. Render one as a dedicated
+	// element so a blank line in Markdown remains visible in the post layout.
+	renderer.space = () => '<div class="markdown-spacer" aria-hidden="true"></div>\n';
+
 	renderer.image = ({ href, title, text }) => {
 		const titleAttr = title ? ` title="${title}"` : '';
 		return `<img src="${href}" alt="${text}"${titleAttr} style="max-width: 100%; height: auto; display: block; margin: 1rem auto;">`;

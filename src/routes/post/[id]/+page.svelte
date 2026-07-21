@@ -595,6 +595,10 @@
 		margin: var(--spacing-md) 0;
 	}
 
+	.post-content :global(.markdown-spacer) {
+		height: var(--spacing-md);
+	}
+
 	.post-content :global(code) {
 		background: var(--color-bg-light);
 		padding: var(--spacing-xs) var(--spacing-sm);
