@@ -1,4 +1,6 @@
 import { timingSafeEqual } from 'node:crypto';
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import matter from 'gray-matter';
 import { Marked, Renderer } from 'marked';
 import { markedHighlight } from 'marked-highlight';
@@ -7,11 +9,9 @@ import katex from 'katex';
 import type { BlogPost, GraphData, GraphLink, GraphNode, GraphStats } from '$lib/types';
 import type { MarkedExtension, Token, TokenizerAndRendererExtension, Tokens } from 'marked';
 
-const postFiles = import.meta.glob('./content/posts/*.md', {
-	query: '?raw',
-	import: 'default',
-	eager: true
-}) as Record<string, string>;
+// Unlike import.meta.glob, files in this existing post directory are read at
+// request time, so Markdown edits are visible without rebuilding the app.
+const POSTS_DIR = resolve(process.cwd(), 'src/lib/server/content/posts');
 
 const MARKED_OPTIONS = {
 	breaks: true,
@@ -350,10 +350,6 @@ function prepareMarkdownForRendering(markdown: string): { markdown: string; tocI
 	};
 }
 
-function getFileName(path: string): string {
-	return path.split('/').pop() ?? path;
-}
-
 function toMetadata(post: ParsedPost): Omit<BlogPost, 'content'> {
 	return {
 		id: post.id,
@@ -369,10 +365,17 @@ function readAllPosts(): { posts: ParsedPost[]; skipped: string[] } {
 	const skipped: string[] = [];
 	const posts: ParsedPost[] = [];
 
-	Object.entries(postFiles).forEach(([path, fileContents]) => {
-		const fileName = getFileName(path);
+	if (!existsSync(POSTS_DIR)) {
+		return { posts, skipped: [POSTS_DIR] };
+	}
+
+	readdirSync(POSTS_DIR, { withFileTypes: true })
+		.filter((entry) => entry.isFile() && entry.name.endsWith('.md'))
+		.forEach((entry) => {
+			const fileName = entry.name;
 
 		try {
+			const fileContents = readFileSync(resolve(POSTS_DIR, fileName), 'utf8');
 			const { data, content } = matter(fileContents);
 			const id = normalizeString(data.id);
 			const title = normalizeString(data.title);

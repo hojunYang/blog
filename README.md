@@ -59,6 +59,10 @@ Add `<!-- toc -->` to a Markdown post to render a linked table of contents at th
 내용
 ```
 
+## Runtime Markdown updates
+
+Posts are read from `src/lib/server/content/posts` at request time, so editing a Markdown file in this existing folder does not require a build or PM2 restart. After adding or changing a `.md` file, its changes appear on the next page request.
+
 ## Markdown math
 
 Use `\(...\)` for inline math and `\[...\]` for display math. Dollar-sign math syntax is not enabled.
