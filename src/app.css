@@ -10,14 +10,14 @@
 	--card-bg: #ffffff;
 	--control-bg: transparent;
 	--control-border: var(--stroke);
-	--link: #4f83ff;
+	--link: #95c93d;
 	--tag: #f2c94c;
-	--accent: #1bb1ff;
+	--accent: #95c93d;
 	--shadow-soft: 0 8px 24px rgba(0, 0, 0, 0.05);
 
 	/* 기존 팔레트 호환 */
-	--color-primary: #0088ff;
-	--color-secondary: #2f80ed;
+	--color-primary: #95c93d;
+	--color-secondary: #79ab25;
 	--color-bg-light: var(--bg-muted);
 	--color-bg-white: var(--bg);
 	--color-bg-gray: #e0e0e0;
@@ -31,8 +31,8 @@
 	--shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.08);
 	--shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
 	--shadow-lg: 0 8px 15px rgba(0, 0, 0, 0.15);
-	--shadow-primary: 0 4px 6px rgba(102, 126, 234, 0.3);
-	--shadow-primary-lg: 0 6px 12px rgba(102, 126, 234, 0.4);
+	--shadow-primary: 0 4px 6px rgba(149, 201, 61, 0.26);
+	--shadow-primary-lg: 0 6px 12px rgba(149, 201, 61, 0.34);
 	
 	/* 간격 */
 	--spacing-xs: 0.25rem;

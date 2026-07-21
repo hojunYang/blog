@@ -464,10 +464,7 @@
 
 <style>
 	.post {
-		background: var(--color-bg-white);
-		border-radius: var(--radius-lg);
 		padding: var(--spacing-2xl);
-		box-shadow: var(--shadow-md);
 		max-width: 800px;
 		margin: 0 auto;
 	}

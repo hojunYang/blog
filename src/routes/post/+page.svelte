@@ -237,7 +237,7 @@
 	.search-input:focus-visible {
 		outline: none;
 		border-color: var(--link);
-		box-shadow: 0 0 0 3px rgba(79, 131, 255, 0.13);
+		box-shadow: 0 0 0 3px rgba(149, 201, 61, 0.2);
 	}
 
 	@media (hover: hover) and (pointer: fine) {
