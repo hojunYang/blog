@@ -133,11 +133,16 @@ function renderMathExpression(expression: string, displayMode: boolean): string 
 	}
 }
 
-function createMathToken(type: 'mathInline' | 'mathBlock', raw: string, displayMode: boolean): MathToken {
+function createMathToken(
+	type: 'mathInline' | 'mathBlock',
+	raw: string,
+	displayMode: boolean,
+	delimiterLength = 2
+): MathToken {
 	return {
 		type,
 		raw,
-		text: raw.slice(2, -2).trim(),
+		text: raw.slice(delimiterLength, -delimiterLength).trim(),
 		displayMode
 	};
 }
@@ -146,12 +151,22 @@ const mathBlockExtension: TokenizerAndRendererExtension = {
 	name: 'mathBlock',
 	level: 'block',
 	start(src) {
-		return src.indexOf('\\[');
+		const bracketIndex = src.indexOf('\\[');
+		const dollarIndex = src.indexOf('$$');
+		if (bracketIndex === -1) return dollarIndex;
+		if (dollarIndex === -1) return bracketIndex;
+		return Math.min(bracketIndex, dollarIndex);
 	},
 	tokenizer(src) {
-		if (!src.startsWith('\\[')) return;
+		if (src.startsWith('\\[')) {
+			const endIndex = src.indexOf('\\]', 2);
+			if (endIndex === -1) return;
 
-		const endIndex = src.indexOf('\\]', 2);
+			return createMathToken('mathBlock', src.slice(0, endIndex + 2), true);
+		}
+
+		if (!src.startsWith('$$')) return;
+		const endIndex = src.indexOf('$$', 2);
 		if (endIndex === -1) return;
 
 		return createMathToken('mathBlock', src.slice(0, endIndex + 2), true);
@@ -166,18 +181,33 @@ const mathInlineExtension: TokenizerAndRendererExtension = {
 	name: 'mathInline',
 	level: 'inline',
 	start(src) {
-		return src.indexOf('\\(');
+		const bracketIndex = src.indexOf('\\(');
+		const dollarIndex = src.indexOf('$');
+		if (bracketIndex === -1) return dollarIndex;
+		if (dollarIndex === -1) return bracketIndex;
+		return Math.min(bracketIndex, dollarIndex);
 	},
 	tokenizer(src) {
-		if (!src.startsWith('\\(')) return;
+		if (src.startsWith('\\(')) {
+			const endIndex = src.indexOf('\\)', 2);
+			if (endIndex === -1) return;
 
-		const endIndex = src.indexOf('\\)', 2);
-		if (endIndex === -1) return;
+			const newlineIndex = src.indexOf('\n');
+			if (newlineIndex !== -1 && newlineIndex < endIndex) return;
 
-		const newlineIndex = src.indexOf('\n');
-		if (newlineIndex !== -1 && newlineIndex < endIndex) return;
+			return createMathToken('mathInline', src.slice(0, endIndex + 2), false);
+		}
 
-		return createMathToken('mathInline', src.slice(0, endIndex + 2), false);
+		if (!src.startsWith('$') || src.startsWith('$$') || /\s/.test(src[1] ?? '')) return;
+
+		for (let index = 1; index < src.length; index += 1) {
+			if (src[index] === '\n') return;
+			if (src[index] !== '$' || src[index - 1] === '\\' || /\s/.test(src[index - 1])) continue;
+
+			return createMathToken('mathInline', src.slice(0, index + 1), false, 1);
+		}
+
+		return;
 	},
 	renderer(token) {
 		const mathToken = token as MathToken;

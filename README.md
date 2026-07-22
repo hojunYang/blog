@@ -74,10 +74,10 @@ Adding or replacing these files is reflected without a build or PM2 restart.
 
 ## Markdown math
 
-Use `\(...\)` for inline math and `\[...\]` for display math. Dollar-sign math syntax is not enabled.
+Use `$...$` for inline math and `$$...$$` for display math. The `\(...\)` and `\[...\]` forms also work.
 
 ```md
-문장 안에서는 \( \sigma_p^2 \) 처럼 작성한다.
+문장 안에서는 $\sigma_p^2$ 처럼 작성한다.
 
 \[
 \sigma_p^2 = w^2\sigma_1^2 + (1-w)^2\sigma_2^2 + 2w(1-w)\sigma_1\sigma_2\rho_{12}
